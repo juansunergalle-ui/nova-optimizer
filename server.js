@@ -3,10 +3,12 @@
 require('dotenv').config();
 
 const path = require('path');
+const crypto = require('crypto');
 const express = require('express');
 const multer = require('multer');
 
 const db = require('./server/db');
+const auth = require('./server/auth');
 const { optimize, classifyType } = require('./server/optimizer');
 const { optimizeYtd } = require('./server/ytdOptimizer');
 const { parseYtd, fmtName, toDds } = require('./server/ytd');
@@ -15,6 +17,8 @@ const { optimizeZip } = require('./server/zipOptimizer');
 
 const PORT = Number(process.env.PORT || 3000);
 const MAX_MB = Number(process.env.MAX_FILE_MB || 25);
+const BASE_URL = (process.env.OAUTH_BASE_URL || 'http://localhost:' + PORT).replace(/\/$/, '');
+const COOKIE_SECURE = BASE_URL.startsWith('https://');
 
 const app = express();
 
@@ -23,6 +27,55 @@ const app = express();
 // -------------------------------------------------------------
 app.use(express.json({ limit: '2mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// -------------------------------------------------------------
+// Autenticación Google OAuth
+// -------------------------------------------------------------
+
+// GET /auth/google - redirige al consentimiento de Google
+app.get('/auth/google', (req, res) => {
+  if (!auth.isConfigured()) {
+    return res.status(500).send('Google OAuth no configurado. Agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en .env');
+  }
+  const state = crypto.randomBytes(16).toString('hex');
+  res.setHeader('Set-Cookie', auth.serializeCookie('nova_oauth_state', state, 600, COOKIE_SECURE));
+  res.redirect(auth.authUrl(BASE_URL, state));
+});
+
+// GET /auth/google/callback - intercambia el código y crea la sesión
+app.get('/auth/google/callback', async (req, res) => {
+  try {
+    if (!auth.isConfigured()) {
+      return res.status(500).send('Google OAuth no configurado.');
+    }
+    const cookies = auth.parseCookies(req);
+    if (!req.query.code || req.query.state !== cookies.nova_oauth_state) {
+      return res.status(403).send('Estado de autenticación inválido.');
+    }
+
+    const user = await auth.exchangeCode(BASE_URL, req.query.code);
+    const token = auth.createSession(user);
+    res.setHeader('Set-Cookie', auth.serializeCookie('nova_session', token, 7 * 24 * 60 * 60, COOKIE_SECURE));
+    res.redirect('/');
+  } catch (err) {
+    console.error('[AUTH] Error en callback:', err.message);
+    res.status(500).send('No se pudo iniciar sesión: ' + err.message);
+  }
+});
+
+// GET /api/me - usuario actual (o null)
+app.get('/api/me', (req, res) => {
+  res.json({ ok: true, user: auth.getSession(req), configured: auth.isConfigured() });
+});
+
+// POST /api/logout - cierra la sesión
+app.post('/api/logout', (req, res) => {
+  auth.destroySession(req);
+  res.setHeader('Set-Cookie', auth.clearCookie('nova_session'));
+  res.json({ ok: true });
+});
+
+// -------------------------------------------------------------
 
 // Upload en memoria (sin tocar disco)
 const upload = multer({

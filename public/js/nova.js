@@ -7,7 +7,12 @@
 const $ = (id) => document.getElementById(id);
 
 const els = {
-  dbStatus: $('dbStatus'),
+  btnLogin: $('btnLogin'),
+  userInfo: $('userInfo'),
+  userAvatar: $('userAvatar'),
+  userName: $('userName'),
+  btnLogout: $('btnLogout'),
+  sideUser: $('sideUser'),
   dropzone: $('dropzone'),
   fileInput: $('fileInput'),
   filePreview: $('filePreview'),
@@ -45,7 +50,6 @@ const els = {
   toast: $('toast'),
   sidebar: $('sidebar'),
   btnSidebarToggle: $('btnSidebarToggle'),
-  sideDb: $('sideDb'),
   progressPanel: $('progressPanel'),
   progressLabel: $('progressLabel'),
   progressPct: $('progressPct'),
@@ -62,6 +66,7 @@ let isYtd = false;
 /* ---------------- Utilidades ---------------- */
 
 function formatBytes(bytes) {
+  if (bytes === undefined || bytes === null || Number.isNaN(bytes) || bytes < 0) return '—';
   if (bytes === 0) return '0 B';
   const k = 1024;
   const sizes = ['B', 'KB', 'MB', 'GB'];
@@ -457,9 +462,9 @@ async function analyzeNow() {
 
 function showResult() {
   const r = result;
-  const oSize = r.originalSize;
-  const nSize = r.optimizedSize;
-  const pct = r.savingsPct;
+  const oSize = r.originalSize != null ? r.originalSize : 0;
+  const nSize = r.optimizedSize != null ? r.optimizedSize : null;
+  const pct = r.savingsPct != null ? r.savingsPct : 0;
 
   els.phaseUpload.classList.remove('active');
   els.phaseResult.classList.add('active');
@@ -468,7 +473,7 @@ function showResult() {
   els.resultType.textContent = r.type;
 
   els.sizeOriginal.textContent = formatBytes(oSize);
-  els.sizeOptimized.textContent = formatBytes(nSize);
+  els.sizeOptimized.textContent = nSize != null ? formatBytes(nSize) : '—';
 
   if (r.type === 'ytd') {
     els.nodesOriginal.textContent = r.textures.length + ' texturas';
@@ -495,15 +500,23 @@ function showResult() {
   }
 
   // Barras proporcionales al mayor
-  const max = Math.max(oSize, nSize, 1);
+  const max = Math.max(oSize, nSize || 0, 1);
   els.barOriginal.style.width = (oSize / max) * 100 + '%';
-  setTimeout(() => { els.barOptimized.style.width = (nSize / max) * 100 + '%'; }, 150);
+  setTimeout(() => {
+    els.barOptimized.style.width = (nSize != null ? (nSize / max) * 100 : 0) + '%';
+  }, 150);
 
-// Anillo de ahorro (con count-up animado)
-const ringPct = Math.max(0, Math.min(pct, 100));
-animateCountUp(els.savingsPct, els.savingsRing, ringPct);
-els.savingsBytes.textContent = formatBytes(Math.max(r.savingsBytes, 0));
-els.savingsBytes.classList.add('ok');
+  // Anillo de ahorro (con count-up animado)
+  const ringPct = Math.max(0, Math.min(pct, 100));
+  if (nSize != null) {
+    animateCountUp(els.savingsPct, els.savingsRing, ringPct);
+    els.savingsBytes.textContent = formatBytes(Math.max(r.savingsBytes, 0));
+    els.savingsBytes.classList.add('ok');
+  } else {
+    els.savingsPct.textContent = '—';
+    els.savingsRing.style.setProperty('--pct', '0');
+    els.savingsBytes.textContent = '—';
+  }
 
   els.statComments.textContent = (r.stats && r.stats.comments_removed) || 0;
   els.statEmpties.textContent = (r.stats && r.stats.empties_removed) || 0;
@@ -714,28 +727,62 @@ document.querySelectorAll('.preview-tab').forEach((tab) => {
   });
 });
 
-/* ---------------- MySQL health + historial ---------------- */
+/* ---------------- Autenticación (Google OAuth) ---------------- */
 
-async function checkHealth() {
+async function initAuth() {
   try {
-    const res = await fetch('/api/health');
+    const res = await fetch('/api/me');
     const data = await res.json();
-    els.dbStatus.className = 'status-chip ' + (data.db ? 'online' : 'offline');
-    els.dbStatus.querySelector('.status-label').textContent = data.db
-      ? 'MySQL: conectado'
-      : 'MySQL: sin conexión';
-    els.sideDb.className = 'side-db ' + (data.db ? 'online' : 'offline');
-    els.sideDb.querySelector('span:last-child').textContent = data.db
-      ? 'MySQL conectado'
-      : 'MySQL sin conexión';
-    if (data.db) loadHistory();
+    els.btnLogin.dataset.configured = data.configured ? '1' : '0';
+    renderUser(data.user || null);
   } catch {
-    els.dbStatus.className = 'status-chip offline';
-    els.dbStatus.querySelector('.status-label').textContent = 'Servidor no disponible';
-    els.sideDb.className = 'side-db offline';
-    els.sideDb.querySelector('span:last-child').textContent = 'Servidor no disponible';
+    els.btnLogin.dataset.configured = '0';
+    renderUser(null);
+  }
+  loadHistory();
+}
+
+function fallbackAvatar(name) {
+  const letter = ((name || '?')[0] || '?').toUpperCase();
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#22d3ee"/><text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="40" fill="#05060d">' + letter + '</text></svg>'
+  );
+}
+
+function renderUser(user) {
+  const logged = !!(user && user.email);
+  els.btnLogin.hidden = logged;
+  els.userInfo.hidden = !logged;
+
+  if (logged) {
+    const avatar = user.picture || fallbackAvatar(user.name);
+    els.userAvatar.src = avatar;
+    els.userName.textContent = user.name || user.email;
+    els.sideUser.innerHTML =
+      '<div class="side-user-top">' +
+        '<img class="side-user-avatar" src="' + escapeHtml(avatar) + '" alt="">' +
+        '<span class="side-user-name">' + escapeHtml(user.name || '') + '</span>' +
+      '</div>' +
+      '<div class="side-user-email">' + escapeHtml(user.email) + '</div>';
+  } else {
+    els.sideUser.innerHTML = '<span>Sin sesión iniciada</span>';
   }
 }
+
+els.btnLogin.addEventListener('click', () => {
+  if (els.btnLogin.dataset.configured === '0') {
+    showToast('Login no configurado', 'El administrador debe agregar GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en el servidor.', true);
+    return;
+  }
+  window.location.href = '/auth/google';
+});
+
+els.btnLogout.addEventListener('click', async () => {
+  try {
+    await fetch('/api/logout', { method: 'POST' });
+  } catch { /* silencioso */ }
+  window.location.reload();
+});
 
 async function loadHistory() {
   try {
@@ -768,4 +815,4 @@ async function loadHistory() {
 
 /* ---------------- Init ---------------- */
 
-checkHealth();
+initAuth();
