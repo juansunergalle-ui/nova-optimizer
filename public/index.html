@@ -19,10 +19,10 @@
     </div>
 
     <div class="side-section">
-      <div class="side-title">PROCESO</div>
+      <div class="side-title" data-i18n="process">PROCESO</div>
       <div class="progress-panel" id="progressPanel">
         <div class="progress-head">
-          <span id="progressLabel" class="progress-label">En espera</span>
+          <span id="progressLabel" class="progress-label" data-i18n="waiting">En espera</span>
           <span id="progressPct" class="progress-pct">0%</span>
         </div>
         <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
@@ -31,16 +31,16 @@
     </div>
 
     <div class="side-section side-grow">
-      <div class="side-title">PERFIL</div>
+      <div class="side-title" data-i18n="profile">PERFIL</div>
       <div id="sideUser" class="side-user">
-        <span>Sin sesión iniciada</span>
+        <span data-i18n="noSession">Sin sesión iniciada</span>
       </div>
       <div id="sideProfile" class="side-profile" hidden>
         <div class="side-stats">
-          <div><strong id="profCount">0</strong><span>optimizaciones</span></div>
-          <div><strong id="profSaved">0 B</strong><span>ahorrados</span></div>
+          <div><strong id="profCount">0</strong><span data-i18n="optimizations">optimizaciones</span></div>
+          <div><strong id="profSaved">0 B</strong><span data-i18n="savedShort">ahorrados</span></div>
         </div>
-        <div class="side-profile-title">TU REGISTRO</div>
+        <div class="side-profile-title" data-i18n="yourRecord">TU REGISTRO</div>
         <div id="sideHistoryList" class="side-history-list"></div>
       </div>
     </div>
@@ -68,7 +68,7 @@
       <img src="assets/logo.png" alt="Nova Optimizer" class="brand-logo">
       <div class="brand-text">
         <h1>NOVA<span>OPTIMIZER</span></h1>
-        <p>FiveM Asset Compression Engine</p>
+        <p data-i18n="tagline">FiveM Asset Compression Engine</p>
       </div>
     </div>
     <div class="topbar-right">
@@ -79,14 +79,63 @@
           <path d="M5.84 14.1a6.6 6.6 0 010-4.2V7.06H2.18a11 11 0 000 9.88l3.66-2.84z" fill="#FBBC05"/>
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15A11 11 0 0012 1a11 11 0 00-9.82 6.06L5.84 9.9C6.71 7.31 9.14 5.38 12 5.38z" fill="#EA4335"/>
         </svg>
-        <span>Iniciar sesión</span>
+        <span data-i18n="login">Iniciar sesión</span>
       </button>
-      <button id="btnLogout" class="login-btn" title="Cerrar sesión" hidden>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        <span>Cerrar sesión</span>
-      </button>
+      <div class="profile-menu" id="profileMenu">
+        <button id="btnProfile" class="profile-btn" hidden>
+          <span class="profile-initial" id="profileInitial">N</span>
+          <span class="profile-name" id="profileName">Perfil</span>
+          <svg class="profile-caret" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 9l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <div id="profileDropdown" class="profile-dropdown" hidden>
+          <div class="pd-head">
+            <span class="pd-initial" id="pdInitial">N</span>
+            <div class="pd-id">
+              <div class="pd-name" id="pdName">Nombre</div>
+              <div class="pd-email" id="pdEmail">email</div>
+            </div>
+          </div>
+          <div class="pd-divider"></div>
+          <div class="pd-group" data-i18n="appearance">Apariencia</div>
+          <div class="pd-row">
+            <span class="pd-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="4"/>
+                <path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span class="pd-row-label" data-i18n="theme">Tema</span>
+            <div class="pd-seg" id="themeSeg">
+              <button class="pd-seg-btn" data-theme="dark" data-i18n="themeDark">Oscuro</button>
+              <button class="pd-seg-btn" data-theme="light" data-i18n="themeLight">Claro</button>
+            </div>
+          </div>
+          <div class="pd-row">
+            <span class="pd-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9"/>
+                <path d="M3 12h18M12 3c2.5 2.5 3.8 5.6 3.8 9s-1.3 6.5-3.8 9c-2.5-2.5-3.8-5.6-3.8-9S9.5 5.5 12 3z" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span class="pd-row-label" data-i18n="language">Idioma</span>
+            <div class="pd-seg" id="langSeg">
+              <button class="pd-seg-btn" data-lang="es">Español</button>
+              <button class="pd-seg-btn" data-lang="en">English</button>
+            </div>
+          </div>
+          <div class="pd-divider"></div>
+          <button id="pdLogout" class="pd-item pd-danger">
+            <span class="pd-row-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <span data-i18n="logout">Cerrar sesión</span>
+          </button>
+        </div>
+      </div>
       <div class="version-chip">v1.1</div>
     </div>
   </header>
@@ -96,8 +145,8 @@
     <!-- ===== FASE 1: Subida ===== -->
     <section id="phase-upload" class="phase active">
       <div class="intro">
-        <h2>Comprime tus assets de FiveM</h2>
-        <p>Sube <code>.ytd</code>, <code>.ydd</code>, <code>.yft</code>, <code>.ydr</code>, <code>.xml</code>, <code>.meta</code> o un <code>.zip</code> completo. Compara la calidad antes/después y descarga la versión optimizada lista para tu servidor.</p>
+        <h2 data-i18n="introTitle">Comprime tus assets de FiveM</h2>
+        <p data-i18n="introDesc">Sube <code>.ytd</code>, <code>.ydd</code>, <code>.yft</code>, <code>.ydr</code>, <code>.xml</code>, <code>.meta</code> o un <code>.zip</code> completo. Compara la calidad antes/después y descarga la versión optimizada lista para tu servidor.</p>
       </div>
 
       <div id="dropzone" class="dropzone">
@@ -106,8 +155,8 @@
           <div class="dz-icon">
             <img src="assets/logo.png" alt="Nova" style="width:38px;height:38px;border-radius:10px">
           </div>
-          <p class="dz-title">Arrastra tu archivo aquí</p>
-          <p class="dz-sub">o haz clic para seleccionarlo</p>
+          <p class="dz-title" data-i18n="dropTitle">Arrastra tu archivo aquí</p>
+          <p class="dz-sub" data-i18n="dropSub">o haz clic para seleccionarlo</p>
           <div class="dz-formats">
             <span>.ytd</span><span>.ydd</span><span>.yft</span><span>.ydr</span><span>.xml</span><span>.meta</span><span>.zip</span>
           </div>
@@ -122,7 +171,7 @@
           </div>
           <div class="file-actions">
             <button id="btnOptimize" class="btn btn-primary">
-              <span>OPTIMIZAR</span>
+              <span data-i18n="optimize">OPTIMIZAR</span>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M5 12h14m-6-6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
@@ -134,23 +183,23 @@
       <div class="hud-stats">
         <div class="stat">
           <div class="stat-num" id="statNodes">—</div>
-          <div class="stat-label">Nodos XML</div>
+          <div class="stat-label" data-i18n="statNodes">Nodos XML</div>
         </div>
         <div class="stat">
           <div class="stat-num" id="statSize">—</div>
-          <div class="stat-label">Peso</div>
+          <div class="stat-label" data-i18n="statWeight">Peso</div>
         </div>
         <div class="stat">
           <div class="stat-num" id="statType">—</div>
-          <div class="stat-label">Tipo</div>
+          <div class="stat-label" data-i18n="statType">Tipo</div>
         </div>
       </div>
 
       <!-- Historial -->
       <div class="history">
         <div class="history-head">
-          <h3>Tu historial</h3>
-          <span id="historyBadge" class="badge">Guardado</span>
+          <h3 data-i18n="myHistory">Tu historial</h3>
+          <span id="historyBadge" class="badge" data-i18n="saved">Guardado</span>
         </div>
         <div id="historyList" class="history-list">
           <div class="history-empty">Aún no hay optimizaciones guardadas.</div>
@@ -161,32 +210,32 @@
       <div class="formats-grid">
         <div class="fmt">
           <div class="fmt-icon" style="--fmt:#22d3ee">YTD</div>
-          <div><strong>Texturas</strong><span>Optimización real · comparador de calidad</span></div>
+          <div><strong data-i18n="fmtYtd">Texturas</strong><span data-i18n="fmtYtdDesc">Optimización real · comparador de calidad</span></div>
           <div class="fmt-tag full">FULL</div>
         </div>
         <div class="fmt">
           <div class="fmt-icon" style="--fmt:#e879f9">YDD</div>
-          <div><strong>Ropa / drawables</strong><span>Análisis técnico · texturas del pack</span></div>
+          <div><strong data-i18n="fmtYdd">Ropa / drawables</strong><span data-i18n="fmtYddDesc">Análisis técnico · texturas del pack</span></div>
           <div class="fmt-tag">INFO</div>
         </div>
         <div class="fmt">
           <div class="fmt-icon" style="--fmt:#e879f9">YFT</div>
-          <div><strong>Fragmentos / vehículos</strong><span>Análisis técnico · texturas del pack</span></div>
+          <div><strong data-i18n="fmtYft">Fragmentos / vehículos</strong><span data-i18n="fmtYftDesc">Análisis técnico · texturas del pack</span></div>
           <div class="fmt-tag">INFO</div>
         </div>
         <div class="fmt">
           <div class="fmt-icon" style="--fmt:#e879f9">YDR</div>
-          <div><strong>Props estáticos</strong><span>Análisis técnico · texturas del pack</span></div>
+          <div><strong data-i18n="fmtYdr">Props estáticos</strong><span data-i18n="fmtYdrDesc">Análisis técnico · texturas del pack</span></div>
           <div class="fmt-tag">INFO</div>
         </div>
         <div class="fmt">
           <div class="fmt-icon" style="--fmt:#a3e635">XML</div>
-          <div><strong>Meta / ytyp / ymt</strong><span>Optimización real de texto</span></div>
+          <div><strong data-i18n="fmtXml">Meta / ytyp / ymt</strong><span data-i18n="fmtXmlDesc">Optimización real de texto</span></div>
           <div class="fmt-tag full">FULL</div>
         </div>
         <div class="fmt">
           <div class="fmt-icon" style="--fmt:#fbbf24">ZIP</div>
-          <div><strong>Paquete completo</strong><span>Optimiza todas las texturas .ytd del pack</span></div>
+          <div><strong data-i18n="fmtZip">Paquete completo</strong><span data-i18n="fmtZipDesc">Optimiza todas las texturas .ytd del pack</span></div>
           <div class="fmt-tag full">FULL</div>
         </div>
       </div>
@@ -199,16 +248,16 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M19 12H5m6 6l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Volver
+          <span data-i18n="back">Volver</span>
         </button>
-        <h2>Optimización completada</h2>
+        <h2 data-i18n="resultTitle">Optimización completada</h2>
         <span id="resultType" class="badge badge-accent">—</span>
       </div>
 
       <!-- Comparativa -->
       <div class="compare">
         <div class="compare-col original">
-          <div class="compare-label">ORIGINAL</div>
+          <div class="compare-label" data-i18n="original">ORIGINAL</div>
           <div class="bar-wrap"><div class="bar" id="barOriginal"></div></div>
           <div class="compare-num" id="sizeOriginal">—</div>
           <div class="compare-sub" id="nodesOriginal">—</div>
@@ -219,7 +268,7 @@
           </svg>
         </div>
         <div class="compare-col optimized">
-          <div class="compare-label">OPTIMIZADO</div>
+          <div class="compare-label" data-i18n="optimized">OPTIMIZADO</div>
           <div class="bar-wrap"><div class="bar" id="barOptimized"></div></div>
           <div class="compare-num" id="sizeOptimized">—</div>
           <div class="compare-sub" id="nodesOptimized">—</div>
@@ -230,15 +279,15 @@
         <div class="savings-ring" id="savingsRing">
           <div class="savings-inner">
             <span id="savingsPct">0%</span>
-            <small>ahorrado</small>
+            <small data-i18n="savedLabel">ahorrado</small>
           </div>
         </div>
         <div class="savings-detail">
-          <div class="savings-row"><span>Ahorro total</span><strong id="savingsBytes">—</strong></div>
-          <div class="savings-row"><span>Comentarios eliminados</span><strong id="statComments">0</strong></div>
-          <div class="savings-row"><span>Nodos vacíos eliminados</span><strong id="statEmpties">0</strong></div>
-          <div class="savings-row"><span>Decimales recortados</span><strong id="statDecimals">0</strong></div>
-          <div class="savings-row"><span>Tiempo de proceso</span><strong id="statElapsed">—</strong></div>
+          <div class="savings-row"><span data-i18n="savTotal">Ahorro total</span><strong id="savingsBytes">—</strong></div>
+          <div class="savings-row"><span data-i18n="savComments">Comentarios eliminados</span><strong id="statComments">0</strong></div>
+          <div class="savings-row"><span data-i18n="savEmpties">Nodos vacíos eliminados</span><strong id="statEmpties">0</strong></div>
+          <div class="savings-row"><span data-i18n="savDecimals">Decimales recortados</span><strong id="statDecimals">0</strong></div>
+          <div class="savings-row"><span data-i18n="savTime">Tiempo de proceso</span><strong id="statElapsed">—</strong></div>
         </div>
       </div>
 
@@ -248,47 +297,47 @@
             <path d="M12 4v12m0 0l-4-4m4 4l4-4" stroke-linecap="round" stroke-linejoin="round"/>
             <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke-linecap="round"/>
           </svg>
-          DESCARGAR OPTIMIZADO
+          <span data-i18n="download">DESCARGAR OPTIMIZADO</span>
         </button>
         <button id="btnCopy" class="btn btn-ghost">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="9" y="9" width="12" height="12" rx="2"/>
             <path d="M5 15V5a2 2 0 012-2h10" stroke-linecap="round"/>
           </svg>
-          Copiar XML
+          <span data-i18n="copy">Copiar XML</span>
         </button>
         <button id="btnNew" class="btn btn-ghost">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M12 15V3m0 0L8 7m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
-          Optimizar otro archivo
+          <span data-i18n="newFile">Optimizar otro archivo</span>
         </button>
       </div>
 
       <!-- Comparador de calidad de texturas -->
       <div class="quality" id="qualityPanel" hidden>
         <div class="quality-head">
-          <h3>Comparador de calidad de texturas</h3>
+          <h3 data-i18n="qualityTitle">Comparador de calidad de texturas</h3>
           <div class="quality-legend">
-            <span class="q-item"><i class="swatch sw-orig"></i>Original</span>
-            <span class="q-item"><i class="swatch sw-opt"></i>Optimizada</span>
+            <span class="q-item"><i class="swatch sw-orig"></i><span data-i18n="originalShort">Original</span></span>
+            <span class="q-item"><i class="swatch sw-opt"></i><span data-i18n="optimizedShort">Optimizada</span></span>
           </div>
         </div>
         <div class="quality-slider-row">
-          <span class="qs-label">Calidad global</span>
+          <span class="qs-label" data-i18n="qualityGlobal">Calidad global</span>
           <input type="range" id="qSlider" min="10" max="100" value="100">
           <span class="qs-val" id="qSliderVal">100%</span>
         </div>
         <div id="textureGrid" class="texture-grid">
-          <div class="tile-placeholder">Cargando texturas…</div>
+          <div class="tile-placeholder" data-i18n="loadingTex">Cargando texturas…</div>
         </div>
       </div>
 
       <!-- Vista previa del codigo -->
       <div class="preview">
         <div class="preview-tabs">
-          <button class="preview-tab active" data-target="tab-original">Original</button>
-          <button class="preview-tab" data-target="tab-optimized">Optimizado</button>
+          <button class="preview-tab active" data-target="tab-original" data-i18n="originalShort">Original</button>
+          <button class="preview-tab" data-target="tab-optimized" data-i18n="optimizedShort">Optimizado</button>
         </div>
         <div id="tab-original" class="code active"></div>
         <div id="tab-optimized" class="code"></div>
@@ -298,7 +347,7 @@
   </main>
 
   <footer>
-    <p>NOVA OPTIMIZER · Motor de compresión para assets de FiveM · Los archivos se procesan en tu servidor</p>
+    <p data-i18n="footer">NOVA OPTIMIZER · Motor de compresión para assets de FiveM · Los archivos se procesan en tu servidor</p>
   </footer>
 
   <!-- Toast -->

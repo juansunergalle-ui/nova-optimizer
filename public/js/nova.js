@@ -8,7 +8,17 @@ const $ = (id) => document.getElementById(id);
 
 const els = {
   btnLogin: $('btnLogin'),
-  btnLogout: $('btnLogout'),
+  profileMenu: $('profileMenu'),
+  btnProfile: $('btnProfile'),
+  profileInitial: $('profileInitial'),
+  profileName: $('profileName'),
+  profileDropdown: $('profileDropdown'),
+  pdInitial: $('pdInitial'),
+  pdName: $('pdName'),
+  pdEmail: $('pdEmail'),
+  pdLogout: $('pdLogout'),
+  themeSeg: $('themeSeg'),
+  langSeg: $('langSeg'),
   sideUser: $('sideUser'),
   sideProfile: $('sideProfile'),
   profCount: $('profCount'),
@@ -65,6 +75,325 @@ let result = null;
 let originalContent = '';
 let isYtd = false;
 
+/* ---------------- i18n (Español / English) ---------------- */
+
+const I18N = {
+  es: {
+    login: 'Iniciar sesión',
+    logout: 'Cerrar sesión',
+    appearance: 'Apariencia',
+    theme: 'Tema',
+    themeDark: 'Oscuro',
+    themeLight: 'Claro',
+    language: 'Idioma',
+    tagline: 'FiveM Asset Compression Engine',
+    introTitle: 'Comprime tus assets de FiveM',
+    introDesc: 'Sube <code>.ytd</code>, <code>.ydd</code>, <code>.yft</code>, <code>.ydr</code>, <code>.xml</code>, <code>.meta</code> o un <code>.zip</code> completo. Compara la calidad antes/después y descarga la versión optimizada lista para tu servidor.',
+    dropTitle: 'Arrastra tu archivo aquí',
+    dropSub: 'o haz clic para seleccionarlo',
+    optimize: 'OPTIMIZAR',
+    statNodes: 'Nodos XML',
+    statWeight: 'Peso',
+    statType: 'Tipo',
+    myHistory: 'Tu historial',
+    saved: 'Guardado',
+    fmtYtd: 'Texturas',
+    fmtYtdDesc: 'Optimización real · comparador de calidad',
+    fmtYdd: 'Ropa / drawables',
+    fmtYddDesc: 'Análisis técnico · texturas del pack',
+    fmtYft: 'Fragmentos / vehículos',
+    fmtYftDesc: 'Análisis técnico · texturas del pack',
+    fmtYdr: 'Props estáticos',
+    fmtYdrDesc: 'Análisis técnico · texturas del pack',
+    fmtXml: 'Meta / ytyp / ymt',
+    fmtXmlDesc: 'Optimización real de texto',
+    fmtZip: 'Paquete completo',
+    fmtZipDesc: 'Optimiza todas las texturas .ytd del pack',
+    back: 'Volver',
+    resultTitle: 'Optimización completada',
+    original: 'ORIGINAL',
+    optimized: 'OPTIMIZADO',
+    originalShort: 'Original',
+    optimizedShort: 'Optimizada',
+    savedLabel: 'ahorrado',
+    savTotal: 'Ahorro total',
+    savComments: 'Comentarios eliminados',
+    savEmpties: 'Nodos vacíos eliminados',
+    savDecimals: 'Decimales recortados',
+    savTime: 'Tiempo de proceso',
+    download: 'DESCARGAR OPTIMIZADO',
+    copy: 'Copiar XML',
+    newFile: 'Optimizar otro archivo',
+    qualityTitle: 'Comparador de calidad de texturas',
+    qualityGlobal: 'Calidad global',
+    process: 'PROCESO',
+    profile: 'PERFIL',
+    noSession: 'Sin sesión iniciada',
+    optimizations: 'optimizaciones',
+    savedShort: 'ahorrados',
+    yourRecord: 'TU REGISTRO',
+    footer: 'NOVA OPTIMIZER · Motor de compresión para assets de FiveM · Los archivos se procesan en tu servidor',
+    waiting: 'En espera',
+    done: 'Completado',
+    error: 'Error',
+    optimizing: 'OPTIMIZANDO',
+    analyzing: 'ANALIZANDO',
+    processing: 'PROCESANDO',
+    loadedOk: 'Archivo cargado correctamente',
+    badFormat: 'Formato no soportado. Usa .ytd, .xml, .meta, .zip, .ydd, .yft o .ydr',
+    optDone: 'Optimización completada',
+    optDoneYtd: 'Optimización completada ({q}% calidad)',
+    packDone: 'Pack optimizado ({q}% calidad)',
+    analyzeDone: 'Análisis técnico completado',
+    copied: 'XML copiado al portapapeles',
+    copyFail: 'No se pudo copiar',
+    downloading: 'Descargando {name}',
+    analyzeOnly: 'Este formato solo admite análisis técnico (sin descarga)',
+    loginNotConfigured: 'Login no configurado',
+    loginNotConfiguredSub: 'El administrador debe agregar GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en el servidor.',
+    texCount: '{n} texturas',
+    ytdCount: '{n} .ytd',
+    nodeCount: '{n} nodos',
+    noPreview: 'Sin texturas con preview.',
+    loadingTex: 'Cargando texturas…',
+    previewErr: 'error preview',
+    noPreviewShort: 'sin preview',
+    undecodable: 'formato no decodificable',
+    before: 'Antes',
+    after: 'Después',
+    texFound: 'Texturas encontradas',
+    fileType: 'Tipo de archivo',
+    rscVersion: 'Versión RSC7',
+    compressed: 'Comprimido',
+    yes: 'Sí',
+    no: 'No',
+    compRatio: 'Sí ({p}%)',
+    sysSection: 'Sección system',
+    gfxSection: 'Sección graphics',
+    decompSize: 'Tamaño descomprimido',
+    hasTexDict: 'TextureDictionary',
+    analyzeNote: 'Este formato (.ydd/.yft/.ydr) no puede reescribirse sin un motor de mallas. La optimización real está disponible para .ytd (texturas) y .xml/.meta.',
+    histEmptyLogged: 'Aún no optimizaste ningún archivo. Todo lo que optimices se guarda en tu perfil.',
+    histEmptyAnon: 'Inicia sesión para guardar y ver tu historial de optimizaciones.',
+    histSideEmpty: 'Aún no optimizaste nada.',
+    prog: {
+      fileReceived: 'Archivo recibido',
+      analyzeRsc7: 'Analizando estructura RSC7',
+      optTextures: 'Optimizando texturas',
+      genFile: 'Generando archivo',
+      done: 'Completado',
+      unzip: 'Descomprimiendo pack',
+      rezip: 'Re-encodificando ZIP',
+      analyzeDoc: 'Analizando documento',
+      optText: 'Optimizando texto',
+      decompress: 'Descomprimiendo RSC7',
+      analyzeSections: 'Analizando secciones',
+    },
+  },
+  en: {
+    login: 'Sign in',
+    logout: 'Sign out',
+    appearance: 'Appearance',
+    theme: 'Theme',
+    themeDark: 'Dark',
+    themeLight: 'Light',
+    language: 'Language',
+    tagline: 'FiveM Asset Compression Engine',
+    introTitle: 'Compress your FiveM assets',
+    introDesc: 'Upload a <code>.ytd</code>, <code>.ydd</code>, <code>.yft</code>, <code>.ydr</code>, <code>.xml</code>, <code>.meta</code> or a full <code>.zip</code>. Compare before/after quality and download the optimized version ready for your server.',
+    dropTitle: 'Drag your file here',
+    dropSub: 'or click to select it',
+    optimize: 'OPTIMIZE',
+    statNodes: 'XML Nodes',
+    statWeight: 'Weight',
+    statType: 'Type',
+    myHistory: 'Your history',
+    saved: 'Saved',
+    fmtYtd: 'Textures',
+    fmtYtdDesc: 'Real optimization · quality comparator',
+    fmtYdd: 'Clothing / drawables',
+    fmtYddDesc: 'Technical analysis · pack textures',
+    fmtYft: 'Fragments / vehicles',
+    fmtYftDesc: 'Technical analysis · pack textures',
+    fmtYdr: 'Static props',
+    fmtYdrDesc: 'Technical analysis · pack textures',
+    fmtXml: 'Meta / ytyp / ymt',
+    fmtXmlDesc: 'Real text optimization',
+    fmtZip: 'Full package',
+    fmtZipDesc: 'Optimizes every .ytd texture in the pack',
+    back: 'Back',
+    resultTitle: 'Optimization complete',
+    original: 'ORIGINAL',
+    optimized: 'OPTIMIZED',
+    originalShort: 'Original',
+    optimizedShort: 'Optimized',
+    savedLabel: 'saved',
+    savTotal: 'Total savings',
+    savComments: 'Comments removed',
+    savEmpties: 'Empty nodes removed',
+    savDecimals: 'Decimals trimmed',
+    savTime: 'Process time',
+    download: 'DOWNLOAD OPTIMIZED',
+    copy: 'Copy XML',
+    newFile: 'Optimize another file',
+    qualityTitle: 'Texture quality comparator',
+    qualityGlobal: 'Global quality',
+    process: 'PROCESS',
+    profile: 'PROFILE',
+    noSession: 'No session started',
+    optimizations: 'optimizations',
+    savedShort: 'saved',
+    yourRecord: 'YOUR RECORD',
+    footer: 'NOVA OPTIMIZER · Compression engine for FiveM assets · Files are processed on your server',
+    waiting: 'Idle',
+    done: 'Complete',
+    error: 'Error',
+    optimizing: 'OPTIMIZING',
+    analyzing: 'ANALYZING',
+    processing: 'PROCESSING',
+    loadedOk: 'File loaded successfully',
+    badFormat: 'Unsupported format. Use .ytd, .xml, .meta, .zip, .ydd, .yft or .ydr',
+    optDone: 'Optimization complete',
+    optDoneYtd: 'Optimization complete ({q}% quality)',
+    packDone: 'Pack optimized ({q}% quality)',
+    analyzeDone: 'Technical analysis complete',
+    copied: 'XML copied to clipboard',
+    copyFail: 'Could not copy',
+    downloading: 'Downloading {name}',
+    analyzeOnly: 'This format only supports technical analysis (no download)',
+    loginNotConfigured: 'Login not configured',
+    loginNotConfiguredSub: 'The admin must add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET on the server.',
+    texCount: '{n} textures',
+    ytdCount: '{n} .ytd',
+    nodeCount: '{n} nodes',
+    noPreview: 'No textures with preview.',
+    loadingTex: 'Loading textures…',
+    previewErr: 'preview error',
+    noPreviewShort: 'no preview',
+    undecodable: 'format not decodable',
+    before: 'Before',
+    after: 'After',
+    texFound: 'Textures found',
+    fileType: 'File type',
+    rscVersion: 'RSC7 version',
+    compressed: 'Compressed',
+    yes: 'Yes',
+    no: 'No',
+    compRatio: 'Yes ({p}%)',
+    sysSection: 'system section',
+    gfxSection: 'graphics section',
+    decompSize: 'Uncompressed size',
+    hasTexDict: 'TextureDictionary',
+    analyzeNote: 'This format (.ydd/.yft/.ydr) cannot be rewritten without a mesh engine. Real optimization is available for .ytd (textures) and .xml/.meta.',
+    histEmptyLogged: "You haven't optimized any file yet. Everything you optimize is saved to your profile.",
+    histEmptyAnon: 'Sign in to save and view your optimization history.',
+    histSideEmpty: "You haven't optimized anything yet.",
+    prog: {
+      fileReceived: 'File received',
+      analyzeRsc7: 'Analyzing RSC7 structure',
+      optTextures: 'Optimizing textures',
+      genFile: 'Generating file',
+      done: 'Complete',
+      unzip: 'Unpacking package',
+      rezip: 'Re-encoding ZIP',
+      analyzeDoc: 'Analyzing document',
+      optText: 'Optimizing text',
+      decompress: 'Decompressing RSC7',
+      analyzeSections: 'Analyzing sections',
+    },
+  },
+};
+
+let lang = 'es';
+let theme = 'dark';
+let loggedIn = false;
+
+function t(key, vars) {
+  const dict = (I18N[lang] || I18N.es);
+  let s = key.split('.').reduce((o, k) => (o ? o[k] : undefined), dict);
+  if (s === undefined) s = key.split('.').reduce((o, k) => (o ? o[k] : undefined), I18N.es);
+  if (s === undefined) s = key;
+  if (vars) Object.keys(vars).forEach((k) => { s = s.split('{' + k + '}').join(vars[k]); });
+  return s;
+}
+
+function applyI18n() {
+  document.documentElement.lang = lang === 'en' ? 'en' : 'es';
+  document.querySelectorAll('[data-i18n]').forEach((el) => {
+    const k = el.dataset.i18n;
+    const txt = t(k);
+    if (txt !== k) el.innerHTML = txt;
+  });
+}
+
+function initLang() {
+  lang = localStorage.getItem('nova-lang') || (navigator.language || 'es').toLowerCase().indexOf('en') === 0 ? 'en' : 'es';
+  if (lang !== 'es' && lang !== 'en') lang = 'es';
+  syncLangSeg();
+  applyI18n();
+}
+
+function setLang(l) {
+  if (l !== 'es' && l !== 'en') return;
+  lang = l;
+  try { localStorage.setItem('nova-lang', l); } catch (e) { /* silencioso */ }
+  syncLangSeg();
+  applyI18n();
+  if (loggedIn) loadHistory();
+}
+
+function syncLangSeg() {
+  els.langSeg.querySelectorAll('.pd-seg-btn').forEach((b) => {
+    b.classList.toggle('active', b.dataset.lang === lang);
+  });
+}
+
+function applyTheme(th) {
+  theme = th === 'light' ? 'light' : 'dark';
+  document.documentElement.classList.toggle('theme-light', theme === 'light');
+  try { localStorage.setItem('nova-theme', theme); } catch (e) { /* silencioso */ }
+  els.themeSeg.querySelectorAll('.pd-seg-btn').forEach((b) => {
+    b.classList.toggle('active', b.dataset.theme === theme);
+  });
+}
+
+function initTheme() {
+  theme = localStorage.getItem('nova-theme') === 'light' ? 'light' : 'dark';
+  applyTheme(theme);
+}
+
+/* ---------------- Menú de perfil ---------------- */
+
+function openDropdown() {
+  els.profileDropdown.hidden = false;
+  els.btnProfile.classList.add('open');
+}
+function closeDropdown() {
+  els.profileDropdown.hidden = true;
+  els.btnProfile.classList.remove('open');
+}
+function toggleDropdown() {
+  els.profileDropdown.hidden ? openDropdown() : closeDropdown();
+}
+els.btnProfile.addEventListener('click', (e) => {
+  e.stopPropagation();
+  toggleDropdown();
+});
+document.addEventListener('click', (e) => {
+  if (!els.profileDropdown.hidden && !els.profileMenu.contains(e.target)) closeDropdown();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeDropdown();
+});
+els.themeSeg.addEventListener('click', (e) => {
+  const btn = e.target.closest('.pd-seg-btn');
+  if (btn && btn.dataset.theme) applyTheme(btn.dataset.theme);
+});
+els.langSeg.addEventListener('click', (e) => {
+  const btn = e.target.closest('.pd-seg-btn');
+  if (btn && btn.dataset.lang) setLang(btn.dataset.lang);
+});
+
 /* ---------------- Utilidades ---------------- */
 
 function formatBytes(bytes) {
@@ -109,7 +438,7 @@ function setBtnLoading(btn, loading, label) {
   if (loading) {
     btn.dataset.html = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> ' + (label || 'PROCESANDO');
+    btn.innerHTML = '<span class="spinner"></span> ' + (label || t('processing'));
   } else {
     btn.disabled = false;
     if (btn.dataset.html) btn.innerHTML = btn.dataset.html;
@@ -120,30 +449,30 @@ function setBtnLoading(btn, loading, label) {
 
 const PROGRESS_STEPS = {
   ytd: [
-    { label: 'Archivo recibido', at: 0.05 },
-    { label: 'Analizando estructura RSC7', at: 0.22 },
-    { label: 'Optimizando texturas', at: 0.45 },
-    { label: 'Generando archivo', at: 0.8 },
-    { label: 'Completado', at: 1 },
+    { k: 'prog.fileReceived', at: 0.05 },
+    { k: 'prog.analyzeRsc7', at: 0.22 },
+    { k: 'prog.optTextures', at: 0.45 },
+    { k: 'prog.genFile', at: 0.8 },
+    { k: 'prog.done', at: 1 },
   ],
   zip: [
-    { label: 'Archivo recibido', at: 0.05 },
-    { label: 'Descomprimiendo pack', at: 0.2 },
-    { label: 'Optimizando texturas', at: 0.45 },
-    { label: 'Re-encodificando ZIP', at: 0.75 },
-    { label: 'Completado', at: 1 },
+    { k: 'prog.fileReceived', at: 0.05 },
+    { k: 'prog.unzip', at: 0.2 },
+    { k: 'prog.optTextures', at: 0.45 },
+    { k: 'prog.rezip', at: 0.75 },
+    { k: 'prog.done', at: 1 },
   ],
   xml: [
-    { label: 'Archivo recibido', at: 0.1 },
-    { label: 'Analizando documento', at: 0.3 },
-    { label: 'Optimizando texto', at: 0.6 },
-    { label: 'Completado', at: 1 },
+    { k: 'prog.fileReceived', at: 0.1 },
+    { k: 'prog.analyzeDoc', at: 0.3 },
+    { k: 'prog.optText', at: 0.6 },
+    { k: 'prog.done', at: 1 },
   ],
   rsc7: [
-    { label: 'Archivo recibido', at: 0.1 },
-    { label: 'Descomprimiendo RSC7', at: 0.35 },
-    { label: 'Analizando secciones', at: 0.7 },
-    { label: 'Completado', at: 1 },
+    { k: 'prog.fileReceived', at: 0.1 },
+    { k: 'prog.decompress', at: 0.35 },
+    { k: 'prog.analyzeSections', at: 0.7 },
+    { k: 'prog.done', at: 1 },
   ],
 };
 
@@ -174,7 +503,7 @@ function startProgress(type, opts) {
   els.sidebar.classList.add('open');
 
   els.progressSteps.innerHTML = steps.map((s, i) =>
-    '<li data-step="' + i + '"><span class="p-dot"></span><span class="p-label">' + s.label + '</span></li>').join('');
+    '<li data-step="' + i + '"><span class="p-dot"></span><span class="p-label">' + t(s.k) + '</span></li>').join('');
 
   // activar pasos en el tiempo
   steps.forEach((s, i) => {
@@ -183,7 +512,7 @@ function startProgress(type, opts) {
       // paso anterior -> done, este -> active
       if (i > 0) setStep(i - 1, 'done');
       setStep(i, 'active');
-      els.progressLabel.textContent = s.label;
+      els.progressLabel.textContent = t(s.k);
     }, est * s.at));
   });
 
@@ -200,7 +529,7 @@ function startProgress(type, opts) {
 
   // panel visible
   els.progressPanel.style.display = '';
-  els.progressLabel.textContent = steps[0].label;
+  els.progressLabel.textContent = t(steps[0].k);
 }
 
 function setStep(i, state) {
@@ -236,11 +565,11 @@ function finishProgress(ok) {
     els.progressSteps.querySelectorAll('li').forEach((li) => li.classList.add('done'));
     els.progressBar.style.width = '100%';
     els.progressPct.textContent = '100%';
-    els.progressLabel.textContent = 'Completado';
+    els.progressLabel.textContent = t('done');
     panel.classList.add('done');
   } else {
     els.progressSteps.querySelector('li.active')?.classList.add('err');
-    els.progressLabel.textContent = 'Error';
+    els.progressLabel.textContent = t('error');
     panel.classList.add('err');
   }
 }
@@ -287,7 +616,7 @@ function handleFile(file) {
   const okExt = /\.(xml|meta|ytyp|ymt|txt|ytd|zip|ydd|yft|ydr|ybn|ymap)$/i;
 
   if (!okExt.test(file.name)) {
-    showToast('Formato no soportado. Usa .ytd, .xml, .meta, .zip, .ydd, .yft o .ydr', 'err');
+    showToast(t('badFormat'), 'err');
     return;
   }
 
@@ -302,10 +631,10 @@ function handleFile(file) {
     const reader = new FileReader();
     reader.onload = (e) => {
       originalContent = e.target.result;
-      els.statNodes.textContent = countXmlNodes(originalContent).toLocaleString('es');
+      els.statNodes.textContent = countXmlNodes(originalContent).toLocaleString(lang === 'en' ? 'en' : 'es');
       els.statSize.textContent = formatBytes(file.size);
       els.statType.textContent = detectType(file.name, originalContent);
-      showToast('Archivo cargado correctamente', 'ok');
+      showToast(t('loadedOk'), 'ok');
     };
     reader.readAsText(file);
     return;
@@ -318,7 +647,7 @@ function handleFile(file) {
     els.statNodes.textContent = '—';
     els.statSize.textContent = formatBytes(file.size);
     els.statType.textContent = detectExt(file.name);
-    showToast('Archivo cargado correctamente', 'ok');
+    showToast(t('loadedOk'), 'ok');
   };
   reader.readAsArrayBuffer(file);
 }
@@ -362,7 +691,7 @@ async function optimizeXmlNow() {
   form.append('keepDeclaration', 'true');
   form.append('trimDecimals', 'true');
 
-  setBtnLoading(els.btnOptimize, true, 'OPTIMIZANDO');
+  setBtnLoading(els.btnOptimize, true, t('optimizing'));
   startProgress('xml');
   try {
     const res = await fetch('/api/optimize', { method: 'POST', body: form });
@@ -372,7 +701,7 @@ async function optimizeXmlNow() {
     finishProgress(true);
     showResult();
     loadHistory();
-    showToast('Optimización completada', 'ok');
+    showToast(t('optDone'), 'ok');
   } catch (err) {
     finishProgress(false);
     showToast(err.message, 'err');
@@ -390,7 +719,7 @@ async function optimizeYtdNow() {
   form.append('quality', String(quality));
   form.append('stripMips', 'true');
 
-  setBtnLoading(els.btnOptimize, true, 'OPTIMIZANDO');
+  setBtnLoading(els.btnOptimize, true, t('optimizing'));
   startProgress('ytd', { quality });
   try {
     const res = await fetch('/api/optimize-ytd', { method: 'POST', body: form });
@@ -400,7 +729,7 @@ async function optimizeYtdNow() {
     finishProgress(true);
     showResult();
     loadHistory();
-    showToast('Optimización completada (' + data.quality + '% calidad)', 'ok');
+    showToast(t('optDoneYtd', { q: data.quality }), 'ok');
   } catch (err) {
     finishProgress(false);
     showToast(err.message, 'err');
@@ -417,7 +746,7 @@ async function optimizeZipNow() {
   form.append('file', new File([currentBytes], currentFile.name));
   form.append('quality', String(quality));
 
-  setBtnLoading(els.btnOptimize, true, 'OPTIMIZANDO');
+  setBtnLoading(els.btnOptimize, true, t('optimizing'));
   startProgress('zip', { quality });
   try {
     const res = await fetch('/api/optimize-zip', { method: 'POST', body: form });
@@ -427,7 +756,7 @@ async function optimizeZipNow() {
     finishProgress(true);
     showResult();
     loadHistory();
-    showToast('Pack optimizado (' + data.quality + '% calidad)', 'ok');
+    showToast(t('packDone', { q: data.quality }), 'ok');
   } catch (err) {
     finishProgress(false);
     showToast(err.message, 'err');
@@ -442,7 +771,7 @@ async function analyzeNow() {
   const form = new FormData();
   form.append('file', new File([currentBytes], currentFile.name));
 
-  setBtnLoading(els.btnOptimize, true, 'ANALIZANDO');
+  setBtnLoading(els.btnOptimize, true, t('analyzing'));
   startProgress('rsc7');
   try {
     const res = await fetch('/api/analyze', { method: 'POST', body: form });
@@ -451,7 +780,7 @@ async function analyzeNow() {
     result = data;
     finishProgress(true);
     showResult();
-    showToast('Análisis técnico completado', 'ok');
+    showToast(t('analyzeDone'), 'ok');
   } catch (err) {
     finishProgress(false);
     showToast(err.message, 'err');
@@ -478,23 +807,23 @@ function showResult() {
   els.sizeOptimized.textContent = nSize != null ? formatBytes(nSize) : '—';
 
   if (r.type === 'ytd') {
-    els.nodesOriginal.textContent = r.textures.length + ' texturas';
-    els.nodesOptimized.textContent = r.textures.length + ' texturas';
+    els.nodesOriginal.textContent = t('texCount', { n: r.textures.length });
+    els.nodesOptimized.textContent = t('texCount', { n: r.textures.length });
     els.preview.style.display = 'none';
     renderTextureGrid();
   } else if (r.type === 'zip') {
-    els.nodesOriginal.textContent = r.entries.length + ' .ytd';
-    els.nodesOptimized.textContent = r.entries.length + ' .ytd';
+    els.nodesOriginal.textContent = t('ytdCount', { n: r.entries.length });
+    els.nodesOptimized.textContent = t('ytdCount', { n: r.entries.length });
     els.preview.style.display = 'none';
     renderZipList();
   } else if (r.type === 'rsc7') {
-    els.nodesOriginal.textContent = (r.textures ? r.textures.length : 0) + ' texturas';
+    els.nodesOriginal.textContent = t('texCount', { n: r.textures ? r.textures.length : 0 });
     els.nodesOptimized.textContent = '—';
     els.preview.style.display = 'none';
     renderAnalyzeInfo();
   } else {
-    els.nodesOriginal.textContent = countXmlNodes(originalContent) + ' nodos';
-    els.nodesOptimized.textContent = countXmlNodes(r.optimizedContent) + ' nodos';
+    els.nodesOriginal.textContent = t('nodeCount', { n: countXmlNodes(originalContent) });
+    els.nodesOptimized.textContent = t('nodeCount', { n: countXmlNodes(r.optimizedContent) });
     els.preview.style.display = '';
     els.qualityPanel.hidden = true;
     $('tab-original').innerHTML = highlightXml(originalContent.slice(0, 200000));
@@ -537,7 +866,7 @@ function renderTextureGrid() {
   els.qSliderVal.textContent = els.qSlider.value + '%';
 
   if (!r.previews || !r.previews.length) {
-    grid.innerHTML = '<div class="tile-placeholder">Sin texturas con preview.</div>';
+    grid.innerHTML = '<div class="tile-placeholder">' + t('noPreview') + '</div>';
     return;
   }
 
@@ -555,8 +884,8 @@ function renderTextureGrid() {
 
     const imgs = document.createElement('div');
     imgs.className = 'tile-imgs';
-    imgs.appendChild(buildPreview('Antes', p.before));
-    imgs.appendChild(buildPreview('Después', p.after));
+    imgs.appendChild(buildPreview(t('before'), p.before));
+    imgs.appendChild(buildPreview(t('after'), p.after));
 
     const foot = document.createElement('div');
     foot.className = 'tile-foot';
@@ -608,13 +937,13 @@ function renderAnalyzeInfo() {
   const box = document.createElement('div');
   box.className = 'analyze-box';
   const rows = [
-    ['Tipo de archivo', r.originalName],
-    ['Versión RSC7', 'v' + r.version],
-    ['Comprimido', r.isCompressed ? 'Sí (' + r.compressedRatio + '%)' : 'No'],
-    ['Sección system', formatBytes(r.sysSize)],
-    ['Sección graphics', formatBytes(r.gfxSize)],
-    ['Tamaño descomprimido', formatBytes(r.originalSize)],
-    ['TextureDictionary', r.hasTextureDict ? 'Sí' : 'No'],
+    [t('fileType'), r.originalName],
+    [t('rscVersion'), 'v' + r.version],
+    [t('compressed'), r.isCompressed ? t('compRatio', { p: r.compressedRatio }) : t('no')],
+    [t('sysSection'), formatBytes(r.sysSize)],
+    [t('gfxSection'), formatBytes(r.gfxSize)],
+    [t('decompSize'), formatBytes(r.originalSize)],
+    [t('hasTexDict'), r.hasTextureDict ? t('yes') : t('no')],
   ];
   box.innerHTML = rows.map(([k, v]) =>
     '<div class="an-row"><span>' + k + '</span><strong>' + escapeHtml(String(v)) + '</strong></div>').join('');
@@ -622,15 +951,15 @@ function renderAnalyzeInfo() {
   if (r.textures && r.textures.length) {
     const sub = document.createElement('div');
     sub.className = 'analyze-textures';
-    sub.innerHTML = '<div class="an-title">Texturas encontradas</div>' +
-      r.textures.map((t) =>
-        '<div class="an-tex">' + escapeHtml(t.name) +
-        ' <span>' + t.width + 'x' + t.height + ' · ' + escapeHtml(t.formatName) +
-        ' · ' + formatBytes(t.pixelSize) + '</span></div>').join('');
+    sub.innerHTML = '<div class="an-title">' + t('texFound') + '</div>' +
+      r.textures.map((tex) =>
+        '<div class="an-tex">' + escapeHtml(tex.name) +
+        ' <span>' + tex.width + 'x' + tex.height + ' · ' + escapeHtml(tex.formatName) +
+        ' · ' + formatBytes(tex.pixelSize) + '</span></div>').join('');
     box.appendChild(sub);
   }
 
-  box.innerHTML += '<div class="an-note">Este formato (.ydd/.yft/.ydr) no puede reescribirse sin un motor de mallas. La optimización real está disponible para .ytd (texturas) y .xml/.meta.</div>';
+  box.innerHTML += '<div class="an-note">' + t('analyzeNote') + '</div>';
   grid.appendChild(box);
 }
 
@@ -650,11 +979,11 @@ function buildPreview(label, pv) {
       for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
       ctx.putImageData(new ImageData(arr, pv.w, pv.h), 0, 0);
     } catch (e) {
-      cell.innerHTML += '<div class="tile-nopv">error preview</div>';
+      cell.innerHTML += '<div class="tile-nopv">' + t('previewErr') + '</div>';
     }
     cell.appendChild(canvas);
   } else {
-    cell.innerHTML += '<div class="tile-nopv">sin preview<br><small>formato no decodificable</small></div>';
+    cell.innerHTML += '<div class="tile-nopv">' + t('noPreviewShort') + '<br><small>' + t('undecodable') + '</small></div>';
   }
   return cell;
 }
@@ -686,7 +1015,7 @@ els.btnDownload.addEventListener('click', () => {
   if (!result) return;
 
   if (result.type === 'rsc7') {
-    showToast('Este formato solo admite análisis técnico (sin descarga)', 'err');
+    showToast(t('analyzeOnly'), 'err');
     return;
   }
 
@@ -698,7 +1027,7 @@ els.btnDownload.addEventListener('click', () => {
     const blob = new Blob([result.optimizedContent], { type: 'application/xml' });
     downloadBlob(blob, result.optimizedName);
   }
-  showToast('Descargando ' + result.optimizedName, 'ok');
+  showToast(t('downloading', { name: result.optimizedName }), 'ok');
 });
 
 function downloadBlob(blob, name) {
@@ -723,9 +1052,9 @@ els.btnCopy.addEventListener('click', async () => {
   if (!result) return;
   try {
     await navigator.clipboard.writeText(result.optimizedContent);
-    showToast('XML copiado al portapapeles', 'ok');
+    showToast(t('copied'), 'ok');
   } catch {
-    showToast('No se pudo copiar', 'err');
+    showToast(t('copyFail'), 'err');
   }
 });
 
@@ -762,33 +1091,39 @@ async function initAuth() {
   loadHistory();
 }
 
-let loggedIn = false;
-
 function renderUser(user) {
   loggedIn = !!(user && user.email);
   els.btnLogin.hidden = loggedIn;
-  els.btnLogout.hidden = !loggedIn;
+  els.btnProfile.hidden = !loggedIn;
   els.sideProfile.hidden = !loggedIn;
 
   if (loggedIn) {
+    const name = user.name || user.email || '';
+    const initial = (name.trim()[0] || '?').toUpperCase();
+    els.profileInitial.textContent = initial;
+    els.profileName.textContent = name.split(/\s+/)[0] || name;
+    els.pdInitial.textContent = initial;
+    els.pdName.textContent = name;
+    els.pdEmail.textContent = user.email || '';
     els.sideUser.innerHTML =
-      '<div class="side-user-name">' + escapeHtml(user.name || '') + '</div>' +
-      '<div class="side-user-email">' + escapeHtml(user.email) + '</div>';
+      '<div class="side-user-name">' + escapeHtml(name) + '</div>' +
+      '<div class="side-user-email">' + escapeHtml(user.email || '') + '</div>';
   } else {
-    els.sideUser.innerHTML = '<span>Sin sesión iniciada</span>';
+    closeDropdown();
+    els.sideUser.innerHTML = '<span>' + t('noSession') + '</span>';
     els.sideHistoryList.innerHTML = '';
   }
 }
 
 els.btnLogin.addEventListener('click', () => {
   if (els.btnLogin.dataset.configured === '0') {
-    showToast('Login no configurado', 'El administrador debe agregar GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en el servidor.', true);
+    showToast(t('loginNotConfigured'), t('loginNotConfiguredSub'), true);
     return;
   }
   window.location.href = '/auth/google';
 });
 
-els.btnLogout.addEventListener('click', async () => {
+els.pdLogout.addEventListener('click', async () => {
   try {
     await fetch('/api/logout', { method: 'POST' });
   } catch { /* silencioso */ }
@@ -810,10 +1145,10 @@ async function loadHistory() {
       els.profSaved.textContent = formatBytes(totalSaved);
 
       if (!items.length) {
-        els.sideHistoryList.innerHTML = '<div class="side-history-empty">Aún no optimizaste nada.</div>';
+        els.sideHistoryList.innerHTML = '<div class="side-history-empty">' + t('histSideEmpty') + '</div>';
       } else {
         els.sideHistoryList.innerHTML = items.slice(0, 5).map((it) => {
-          const date = new Date(it.created_at).toLocaleString('es');
+          const date = new Date(it.created_at).toLocaleString(lang === 'en' ? 'en' : 'es');
           return '<div class="side-history-item">' +
             '<div class="sh-main">' +
               '<div class="sh-name" title="' + escapeHtml(it.original_name) + '">' + escapeHtml(it.original_name) + '</div>' +
@@ -828,8 +1163,8 @@ async function loadHistory() {
     // Historial principal
     if (!items.length) {
       els.historyList.innerHTML = loggedIn
-        ? '<div class="history-empty">Aún no optimizaste ningún archivo. Todo lo que optimices se guarda en tu perfil.</div>'
-        : '<div class="history-empty">Inicia sesión para guardar y ver tu historial de optimizaciones.</div>';
+        ? '<div class="history-empty">' + t('histEmptyLogged') + '</div>'
+        : '<div class="history-empty">' + t('histEmptyAnon') + '</div>';
       return;
     }
 
@@ -837,7 +1172,7 @@ async function loadHistory() {
     items.slice(0, 12).forEach((it) => {
       const div = document.createElement('div');
       div.className = 'history-item';
-      const date = new Date(it.created_at).toLocaleString('es');
+      const date = new Date(it.created_at).toLocaleString(lang === 'en' ? 'en' : 'es');
       div.innerHTML =
         '<div>' +
           '<div class="hi-name">' + escapeHtml(it.original_name) + '</div>' +
@@ -853,4 +1188,6 @@ async function loadHistory() {
 
 /* ---------------- Init ---------------- */
 
+initLang();
+initTheme();
 initAuth();
