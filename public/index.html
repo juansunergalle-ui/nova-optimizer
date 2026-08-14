@@ -4,12 +4,45 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NOVA OPTIMIZER — Optimiza tus props y clothing de FiveM</title>
-  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+  <link rel="icon" type="image/png" href="assets/logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+  <!-- Barra lateral: marca + progreso de optimizacion -->
+  <aside class="sidebar" id="sidebar">
+    <div class="side-brand">
+      <img src="assets/logo.png" alt="Nova" class="side-logo">
+      <div class="side-brand-text">NOVA<span>OPTIMIZER</span></div>
+    </div>
+
+    <div class="side-section">
+      <div class="side-title">PROCESO</div>
+      <div class="progress-panel" id="progressPanel">
+        <div class="progress-head">
+          <span id="progressLabel" class="progress-label">En espera</span>
+          <span id="progressPct" class="progress-pct">0%</span>
+        </div>
+        <div class="progress-track"><div class="progress-bar" id="progressBar"></div></div>
+        <ol class="progress-steps" id="progressSteps"></ol>
+      </div>
+    </div>
+
+    <div class="side-section side-grow">
+      <div class="side-title">SISTEMA</div>
+      <div id="sideDb" class="side-db"><span class="dot"></span><span>MySQL: conectando…</span></div>
+    </div>
+
+    <div class="side-foot">v1.1 · FiveM Asset Engine</div>
+  </aside>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <button id="btnSidebarToggle" class="sidebar-toggle" aria-label="Abrir panel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/>
+    </svg>
+  </button>
 
   <!-- Fondo animado -->
   <div class="bg">
@@ -22,7 +55,7 @@
   <!-- Header -->
   <header class="topbar">
     <div class="brand">
-      <img src="assets/logo.svg" alt="Nova Optimizer" class="brand-logo">
+      <img src="assets/logo.png" alt="Nova Optimizer" class="brand-logo">
       <div class="brand-text">
         <h1>NOVA<span>OPTIMIZER</span></h1>
         <p>FiveM Asset Compression Engine</p>
@@ -49,7 +82,7 @@
         <input type="file" id="fileInput" accept=".xml,.meta,.ytd,.ydd,.yft,.ydr,.ybn,.ymap,.ytyp,.ymt,.zip,.txt" hidden>
         <div class="dropzone-inner">
           <div class="dz-icon">
-            <img src="assets/logo.svg" alt="Nova" style="width:38px;height:38px">
+            <img src="assets/logo.png" alt="Nova" style="width:38px;height:38px;border-radius:10px">
           </div>
           <p class="dz-title">Arrastra tu archivo aquí</p>
           <p class="dz-sub">o haz clic para seleccionarlo</p>

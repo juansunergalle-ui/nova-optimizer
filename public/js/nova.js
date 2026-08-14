@@ -43,6 +43,14 @@ const els = {
   textureGrid: $('textureGrid'),
   preview: document.querySelector('.preview'),
   toast: $('toast'),
+  sidebar: $('sidebar'),
+  btnSidebarToggle: $('btnSidebarToggle'),
+  sideDb: $('sideDb'),
+  progressPanel: $('progressPanel'),
+  progressLabel: $('progressLabel'),
+  progressPct: $('progressPct'),
+  progressBar: $('progressBar'),
+  progressSteps: $('progressSteps'),
 };
 
 let currentFile = null;
@@ -99,6 +107,147 @@ function setBtnLoading(btn, loading, label) {
     btn.disabled = false;
     if (btn.dataset.html) btn.innerHTML = btn.dataset.html;
   }
+}
+
+/* ---------------- Progreso de optimizacion (sidebar) ---------------- */
+
+const PROGRESS_STEPS = {
+  ytd: [
+    { label: 'Archivo recibido', at: 0.05 },
+    { label: 'Analizando estructura RSC7', at: 0.22 },
+    { label: 'Optimizando texturas', at: 0.45 },
+    { label: 'Generando archivo', at: 0.8 },
+    { label: 'Completado', at: 1 },
+  ],
+  zip: [
+    { label: 'Archivo recibido', at: 0.05 },
+    { label: 'Descomprimiendo pack', at: 0.2 },
+    { label: 'Optimizando texturas', at: 0.45 },
+    { label: 'Re-encodificando ZIP', at: 0.75 },
+    { label: 'Completado', at: 1 },
+  ],
+  xml: [
+    { label: 'Archivo recibido', at: 0.1 },
+    { label: 'Analizando documento', at: 0.3 },
+    { label: 'Optimizando texto', at: 0.6 },
+    { label: 'Completado', at: 1 },
+  ],
+  rsc7: [
+    { label: 'Archivo recibido', at: 0.1 },
+    { label: 'Descomprimiendo RSC7', at: 0.35 },
+    { label: 'Analizando secciones', at: 0.7 },
+    { label: 'Completado', at: 1 },
+  ],
+};
+
+let _progressTimers = [];
+let _progressRaf = null;
+
+/** Estimación razonable del tiempo del servidor según tipo y calidad. */
+function estimateProgress(type, quality) {
+  const mb = currentFile ? currentFile.size / (1024 * 1024) : 0;
+  if (type === 'ytd') return 600 + Math.max(0, 100 - (quality || 100)) * 40 + mb * 90;
+  if (type === 'zip') return 1200 + Math.max(0, 100 - (quality || 100)) * 45 + mb * 120;
+  if (type === 'rsc7') return 800 + mb * 60;
+  return 500 + mb * 30;
+}
+
+function startProgress(type, opts) {
+  const quality = opts && opts.quality !== undefined ? opts.quality : 100;
+  const steps = PROGRESS_STEPS[type] || PROGRESS_STEPS.xml;
+  const est = estimateProgress(type, quality);
+
+  // limpiar estado previo
+  _progressTimers.forEach(clearTimeout);
+  _progressTimers = [];
+  cancelAnimationFrame(_progressRaf);
+
+  const panel = els.progressPanel;
+  panel.classList.remove('done', 'err');
+  els.sidebar.classList.add('open');
+
+  els.progressSteps.innerHTML = steps.map((s, i) =>
+    '<li data-step="' + i + '"><span class="p-dot"></span><span class="p-label">' + s.label + '</span></li>').join('');
+
+  // activar pasos en el tiempo
+  steps.forEach((s, i) => {
+    if (s.at >= 1) return;
+    _progressTimers.push(setTimeout(() => {
+      // paso anterior -> done, este -> active
+      if (i > 0) setStep(i - 1, 'done');
+      setStep(i, 'active');
+      els.progressLabel.textContent = s.label;
+    }, est * s.at));
+  });
+
+  // barra + porcentaje animados
+  const t0 = performance.now();
+  const run = (now) => {
+    const t = Math.min(1, (now - t0) / est);
+    const v = Math.min(95, t * 95);
+    els.progressBar.style.width = v + '%';
+    els.progressPct.textContent = Math.round(v) + '%';
+    if (t < 1) _progressRaf = requestAnimationFrame(run);
+  };
+  _progressRaf = requestAnimationFrame(run);
+
+  // panel visible
+  els.progressPanel.style.display = '';
+  els.progressLabel.textContent = steps[0].label;
+}
+
+function setStep(i, state) {
+  const li = els.progressSteps.querySelector('[data-step="' + i + '"]');
+  if (!li) return;
+  li.classList.remove('done', 'active', 'err');
+  if (state) li.classList.add(state);
+}
+
+/* Anima el contador de % de ahorro (y el anillo conic-gradient). */
+function animateCountUp(el, ringEl, target) {
+  const t0 = performance.now();
+  const dur = 900;
+  const step = (now) => {
+    const t = Math.min(1, (now - t0) / dur);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const v = target * eased;
+    el.textContent = v.toFixed(1) + '%';
+    if (ringEl) ringEl.style.setProperty('--pct', v.toFixed(1));
+    if (t < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function finishProgress(ok) {
+  _progressTimers.forEach(clearTimeout);
+  _progressTimers = [];
+  cancelAnimationFrame(_progressRaf);
+
+  const panel = els.progressPanel;
+  if (ok) {
+    els.progressSteps.querySelectorAll('li').forEach((li) => li.classList.remove('active'));
+    els.progressSteps.querySelectorAll('li').forEach((li) => li.classList.add('done'));
+    els.progressBar.style.width = '100%';
+    els.progressPct.textContent = '100%';
+    els.progressLabel.textContent = 'Completado';
+    panel.classList.add('done');
+  } else {
+    els.progressSteps.querySelector('li.active')?.classList.add('err');
+    els.progressLabel.textContent = 'Error';
+    panel.classList.add('err');
+  }
+}
+
+// Toggle del sidebar (móvil / colapsable)
+els.btnSidebarToggle.addEventListener('click', () => {
+  els.sidebar.classList.toggle('open');
+});
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+if (sidebarOverlay) {
+  sidebarOverlay.addEventListener('click', () => els.sidebar.classList.remove('open'));
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') els.sidebar.classList.remove('open');
+  });
 }
 
 /* ---------------- Drag & drop / subida ---------------- */
@@ -207,15 +356,18 @@ async function optimizeXmlNow() {
   form.append('trimDecimals', 'true');
 
   setBtnLoading(els.btnOptimize, true, 'OPTIMIZANDO');
+  startProgress('xml');
   try {
     const res = await fetch('/api/optimize', { method: 'POST', body: form });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Error al optimizar');
     result = data;
+    finishProgress(true);
     showResult();
     loadHistory();
     showToast('Optimización completada', 'ok');
   } catch (err) {
+    finishProgress(false);
     showToast(err.message, 'err');
   } finally {
     setBtnLoading(els.btnOptimize, false);
@@ -225,22 +377,25 @@ async function optimizeXmlNow() {
 async function optimizeYtdNow() {
   if (!currentBytes) return;
 
+  const quality = Number(els.qSlider.value) || 100;
   const form = new FormData();
   form.append('file', new File([currentBytes], currentFile.name));
-  form.append('quality', String(Number(els.qSlider.value) || 100));
+  form.append('quality', String(quality));
   form.append('stripMips', 'true');
 
   setBtnLoading(els.btnOptimize, true, 'OPTIMIZANDO');
-
+  startProgress('ytd', { quality });
   try {
     const res = await fetch('/api/optimize-ytd', { method: 'POST', body: form });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Error al optimizar YTD');
     result = data;
+    finishProgress(true);
     showResult();
     loadHistory();
     showToast('Optimización completada (' + data.quality + '% calidad)', 'ok');
   } catch (err) {
+    finishProgress(false);
     showToast(err.message, 'err');
   } finally {
     setBtnLoading(els.btnOptimize, false);
@@ -250,20 +405,24 @@ async function optimizeYtdNow() {
 async function optimizeZipNow() {
   if (!currentBytes) return;
 
+  const quality = Number(els.qSlider.value) || 100;
   const form = new FormData();
   form.append('file', new File([currentBytes], currentFile.name));
-  form.append('quality', String(Number(els.qSlider.value) || 100));
+  form.append('quality', String(quality));
 
   setBtnLoading(els.btnOptimize, true, 'OPTIMIZANDO');
+  startProgress('zip', { quality });
   try {
     const res = await fetch('/api/optimize-zip', { method: 'POST', body: form });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Error al optimizar ZIP');
     result = data;
+    finishProgress(true);
     showResult();
     loadHistory();
     showToast('Pack optimizado (' + data.quality + '% calidad)', 'ok');
   } catch (err) {
+    finishProgress(false);
     showToast(err.message, 'err');
   } finally {
     setBtnLoading(els.btnOptimize, false);
@@ -277,14 +436,17 @@ async function analyzeNow() {
   form.append('file', new File([currentBytes], currentFile.name));
 
   setBtnLoading(els.btnOptimize, true, 'ANALIZANDO');
+  startProgress('rsc7');
   try {
     const res = await fetch('/api/analyze', { method: 'POST', body: form });
     const data = await res.json();
     if (!res.ok || !data.ok) throw new Error(data.error || 'Error al analizar');
     result = data;
+    finishProgress(true);
     showResult();
     showToast('Análisis técnico completado', 'ok');
   } catch (err) {
+    finishProgress(false);
     showToast(err.message, 'err');
   } finally {
     setBtnLoading(els.btnOptimize, false);
@@ -337,12 +499,11 @@ function showResult() {
   els.barOriginal.style.width = (oSize / max) * 100 + '%';
   setTimeout(() => { els.barOptimized.style.width = (nSize / max) * 100 + '%'; }, 150);
 
-  // Anillo de ahorro
-  const ringPct = Math.max(0, Math.min(pct, 100));
-  els.savingsPct.textContent = ringPct.toFixed(1) + '%';
-  els.savingsRing.style.setProperty('--pct', ringPct.toFixed(1));
-  els.savingsBytes.textContent = formatBytes(Math.max(r.savingsBytes, 0));
-  els.savingsBytes.classList.add('ok');
+// Anillo de ahorro (con count-up animado)
+const ringPct = Math.max(0, Math.min(pct, 100));
+animateCountUp(els.savingsPct, els.savingsRing, ringPct);
+els.savingsBytes.textContent = formatBytes(Math.max(r.savingsBytes, 0));
+els.savingsBytes.classList.add('ok');
 
   els.statComments.textContent = (r.stats && r.stats.comments_removed) || 0;
   els.statEmpties.textContent = (r.stats && r.stats.empties_removed) || 0;
@@ -369,6 +530,7 @@ function renderTextureGrid() {
     const tex = r.textures[i];
     const tile = document.createElement('div');
     tile.className = 'tile';
+    tile.style.animationDelay = (i * 45) + 'ms';
 
     const head = document.createElement('div');
     head.className = 'tile-head';
@@ -410,9 +572,9 @@ function renderZipList() {
   const table = document.createElement('div');
   table.className = 'zip-list';
   table.innerHTML = r.entries
-    .map((e) => {
+    .map((e, i) => {
       const saved = e.sizeAfter < e.sizeBefore;
-      return '<div class="zip-row">' +
+      return '<div class="zip-row" style="animation-delay:' + (i * 45) + 'ms">' +
         '<span class="zip-name" title="' + escapeHtml(e.name) + '">' + escapeHtml(e.name) + '</span>' +
         '<span class="zip-sizes">' + formatBytes(e.sizeBefore) + ' → ' + formatBytes(e.sizeAfter) + '</span>' +
         '<span class="' + (saved ? 'save' : 'none') + '">' + (saved ? '−' + e.pct + '%' : '—') + '</span>' +
@@ -562,10 +724,16 @@ async function checkHealth() {
     els.dbStatus.querySelector('.status-label').textContent = data.db
       ? 'MySQL: conectado'
       : 'MySQL: sin conexión';
+    els.sideDb.className = 'side-db ' + (data.db ? 'online' : 'offline');
+    els.sideDb.querySelector('span:last-child').textContent = data.db
+      ? 'MySQL conectado'
+      : 'MySQL sin conexión';
     if (data.db) loadHistory();
   } catch {
     els.dbStatus.className = 'status-chip offline';
     els.dbStatus.querySelector('.status-label').textContent = 'Servidor no disponible';
+    els.sideDb.className = 'side-db offline';
+    els.sideDb.querySelector('span:last-child').textContent = 'Servidor no disponible';
   }
 }
 

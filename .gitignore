@@ -14,4 +14,4 @@ Thumbs.db
 # Archivos de prueba locales (NO subir)
 oycm3.ytd
 oycm3.yft
-*.png
+/ChatGPT Image*.png
