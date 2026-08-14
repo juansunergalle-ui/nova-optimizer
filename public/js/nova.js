@@ -8,11 +8,12 @@ const $ = (id) => document.getElementById(id);
 
 const els = {
   btnLogin: $('btnLogin'),
-  userInfo: $('userInfo'),
-  userAvatar: $('userAvatar'),
-  userName: $('userName'),
   btnLogout: $('btnLogout'),
   sideUser: $('sideUser'),
+  sideProfile: $('sideProfile'),
+  profCount: $('profCount'),
+  profSaved: $('profSaved'),
+  sideHistoryList: $('sideHistoryList'),
   dropzone: $('dropzone'),
   fileInput: $('fileInput'),
   filePreview: $('filePreview'),
@@ -22,6 +23,7 @@ const els = {
   phaseUpload: $('phase-upload'),
   phaseResult: $('phase-result'),
   btnBack: $('btnBack'),
+  btnNew: $('btnNew'),
   btnDownload: $('btnDownload'),
   btnCopy: $('btnCopy'),
   statNodes: $('statNodes'),
@@ -657,10 +659,28 @@ function buildPreview(label, pv) {
   return cell;
 }
 
-els.btnBack.addEventListener('click', () => {
+els.btnBack.addEventListener('click', resetUpload);
+els.btnNew.addEventListener('click', resetUpload);
+
+// Vuelve a la fase de subida con el estado limpio para optimizar otro archivo
+// sin recargar la página.
+function resetUpload() {
+  currentFile = null;
+  currentBytes = null;
+  originalContent = null;
+  result = null;
+  isYtd = false;
+  els.fileInput.value = '';
+  els.filePreview.hidden = true;
+  els.dropzone.querySelector('.dropzone-inner').style.display = '';
+  els.statNodes.textContent = '—';
+  els.statSize.textContent = '—';
+  els.statType.textContent = '—';
   els.phaseResult.classList.remove('active');
   els.phaseUpload.classList.add('active');
-});
+  els.sidebar.classList.remove('open');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
 
 els.btnDownload.addEventListener('click', () => {
   if (!result) return;
@@ -742,30 +762,21 @@ async function initAuth() {
   loadHistory();
 }
 
-function fallbackAvatar(name) {
-  const letter = ((name || '?')[0] || '?').toUpperCase();
-  return 'data:image/svg+xml;utf8,' + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="#22d3ee"/><text x="50%" y="56%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="40" fill="#05060d">' + letter + '</text></svg>'
-  );
-}
+let loggedIn = false;
 
 function renderUser(user) {
-  const logged = !!(user && user.email);
-  els.btnLogin.hidden = logged;
-  els.userInfo.hidden = !logged;
+  loggedIn = !!(user && user.email);
+  els.btnLogin.hidden = loggedIn;
+  els.btnLogout.hidden = !loggedIn;
+  els.sideProfile.hidden = !loggedIn;
 
-  if (logged) {
-    const avatar = user.picture || fallbackAvatar(user.name);
-    els.userAvatar.src = avatar;
-    els.userName.textContent = user.name || user.email;
+  if (loggedIn) {
     els.sideUser.innerHTML =
-      '<div class="side-user-top">' +
-        '<img class="side-user-avatar" src="' + escapeHtml(avatar) + '" alt="">' +
-        '<span class="side-user-name">' + escapeHtml(user.name || '') + '</span>' +
-      '</div>' +
+      '<div class="side-user-name">' + escapeHtml(user.name || '') + '</div>' +
       '<div class="side-user-email">' + escapeHtml(user.email) + '</div>';
   } else {
     els.sideUser.innerHTML = '<span>Sin sesión iniciada</span>';
+    els.sideHistoryList.innerHTML = '';
   }
 }
 
@@ -786,17 +797,44 @@ els.btnLogout.addEventListener('click', async () => {
 
 async function loadHistory() {
   try {
-    const res = await fetch('/api/history?limit=12');
+    const res = await fetch('/api/history?limit=100');
     const data = await res.json();
     if (!data.ok) return;
+    const items = data.items || [];
 
-    if (!data.items.length) {
-      els.historyList.innerHTML = '<div class="history-empty">Aún no hay optimizaciones guardadas.</div>';
+    // Perfil del usuario (sidebar): total + último registro
+    if (loggedIn) {
+      let totalSaved = 0;
+      items.forEach((it) => { totalSaved += (it.savings_bytes || 0); });
+      els.profCount.textContent = items.length;
+      els.profSaved.textContent = formatBytes(totalSaved);
+
+      if (!items.length) {
+        els.sideHistoryList.innerHTML = '<div class="side-history-empty">Aún no optimizaste nada.</div>';
+      } else {
+        els.sideHistoryList.innerHTML = items.slice(0, 5).map((it) => {
+          const date = new Date(it.created_at).toLocaleString('es');
+          return '<div class="side-history-item">' +
+            '<div class="sh-main">' +
+              '<div class="sh-name" title="' + escapeHtml(it.original_name) + '">' + escapeHtml(it.original_name) + '</div>' +
+              '<div class="sh-sub">' + it.file_type + ' · ' + date + '</div>' +
+            '</div>' +
+            '<div class="sh-save">−' + it.savings_pct.toFixed(1) + '%</div>' +
+          '</div>';
+        }).join('');
+      }
+    }
+
+    // Historial principal
+    if (!items.length) {
+      els.historyList.innerHTML = loggedIn
+        ? '<div class="history-empty">Aún no optimizaste ningún archivo. Todo lo que optimices se guarda en tu perfil.</div>'
+        : '<div class="history-empty">Inicia sesión para guardar y ver tu historial de optimizaciones.</div>';
       return;
     }
 
     els.historyList.innerHTML = '';
-    data.items.forEach((it) => {
+    items.slice(0, 12).forEach((it) => {
       const div = document.createElement('div');
       div.className = 'history-item';
       const date = new Date(it.created_at).toLocaleString('es');

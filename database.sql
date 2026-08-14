@@ -14,6 +14,7 @@ USE nova_optimizer;
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS optimizations (
   id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_email       VARCHAR(255) NULL,
   original_name    VARCHAR(255) NOT NULL,
   file_type        VARCHAR(32)  NOT NULL DEFAULT 'xml',
   original_size    INT UNSIGNED NOT NULL DEFAULT 0,

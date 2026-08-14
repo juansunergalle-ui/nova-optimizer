@@ -93,10 +93,12 @@ app.get('/api/health', async (_req, res) => {
   res.json({ ok: true, db: dbOk, maxMB: MAX_MB });
 });
 
-// GET /api/history - historial de optimizaciones (MySQL)
+// GET /api/history - historial del usuario logueado (MySQL)
 app.get('/api/history', async (req, res) => {
   const limit = Number(req.query.limit || 20);
-  const rows = await db.getHistory(limit);
+  const user = auth.getSession(req);
+  if (!user || !user.email) return res.json({ ok: true, items: [] });
+  const rows = await db.getHistory(limit, user.email);
   res.json({ ok: true, items: rows });
 });
 
@@ -135,22 +137,26 @@ app.post('/api/optimize', upload.single('file'), async (req, res) => {
     const savings_bytes = original_size - optimized_size;
     const savings_pct = original_size > 0 ? (savings_bytes / original_size) * 100 : 0;
 
-    // Guardar en MySQL (no bloquea la respuesta si falla)
-    const record = {
-      original_name: req.file.originalname,
-      file_type: result.type,
-      original_size,
-      optimized_size,
-      savings_bytes,
-      savings_pct: +savings_pct.toFixed(3),
-      comments_removed: result.stats.comments_removed,
-      empties_removed: result.stats.empties_removed,
-      dups_removed: result.stats.dups_removed,
-      decimals_trimmed: result.stats.decimals_trimmed,
-      elapsed_ms: result.elapsed_ms,
-      client_ip: req.ip,
-    };
-    db.saveOptimization(record).catch(() => {});
+    // Guardar en MySQL (solo con sesión iniciada, asociado al perfil)
+    const sessionUser = auth.getSession(req);
+    if (sessionUser && sessionUser.email) {
+      const record = {
+        user_email: sessionUser.email,
+        original_name: req.file.originalname,
+        file_type: result.type,
+        original_size,
+        optimized_size,
+        savings_bytes,
+        savings_pct: +savings_pct.toFixed(3),
+        comments_removed: result.stats.comments_removed,
+        empties_removed: result.stats.empties_removed,
+        dups_removed: result.stats.dups_removed,
+        decimals_trimmed: result.stats.decimals_trimmed,
+        elapsed_ms: result.elapsed_ms,
+        client_ip: req.ip,
+      };
+      db.saveOptimization(record).catch(() => {});
+    }
 
     const baseName = req.file.originalname.replace(/\.[^.]+$/, '');
     const optimizedName = baseName + '_optimized' + ext;
@@ -218,22 +224,26 @@ app.post('/api/optimize-ytd', upload.single('file'), async (req, res) => {
       });
     }
 
-    // Guardar en MySQL (no bloquea la respuesta si falla)
-    const record = {
-      original_name: req.file.originalname,
-      file_type: 'ytd',
-      original_size: result.original.size,
-      optimized_size: result.optimized.size,
-      savings_bytes: result.saved,
-      savings_pct: +result.pct,
-      comments_removed: 0,
-      empties_removed: 0,
-      dups_removed: 0,
-      decimals_trimmed: 0,
-      elapsed_ms: 0,
-      client_ip: req.ip,
-    };
-    db.saveOptimization(record).catch(() => {});
+    // Guardar en MySQL (solo con sesión iniciada, asociado al perfil)
+    const sessionUser = auth.getSession(req);
+    if (sessionUser && sessionUser.email) {
+      const record = {
+        user_email: sessionUser.email,
+        original_name: req.file.originalname,
+        file_type: 'ytd',
+        original_size: result.original.size,
+        optimized_size: result.optimized.size,
+        savings_bytes: result.saved,
+        savings_pct: +result.pct,
+        comments_removed: 0,
+        empties_removed: 0,
+        dups_removed: 0,
+        decimals_trimmed: 0,
+        elapsed_ms: 0,
+        client_ip: req.ip,
+      };
+      db.saveOptimization(record).catch(() => {});
+    }
 
     res.json({
       ok: true,

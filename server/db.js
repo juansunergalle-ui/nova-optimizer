@@ -29,6 +29,7 @@ function init() {
   }
 
   pool = mysql.createPool(cfg);
+  ensureSchema().catch(() => {});
   return pool;
 }
 
@@ -54,8 +55,9 @@ async function saveOptimization(record) {
     const p = getPool();
     if (!p) return false;
     const sql =
-      'INSERT INTO optimizations (original_name, file_type, original_size, optimized_size, savings_bytes, savings_pct, comments_removed, empties_removed, dups_removed, decimals_trimmed, elapsed_ms, client_ip) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)';
+      'INSERT INTO optimizations (user_email, original_name, file_type, original_size, optimized_size, savings_bytes, savings_pct, comments_removed, empties_removed, dups_removed, decimals_trimmed, elapsed_ms, client_ip) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)';
     await p.query(sql, [
+      record.user_email || null,
       record.original_name,
       record.file_type,
       record.original_size,
@@ -76,14 +78,20 @@ async function saveOptimization(record) {
   }
 }
 
-async function getHistory(limit = 20) {
+async function getHistory(limit = 20, userEmail = null) {
   try {
     const p = getPool();
     if (!p) return [];
-    const [rows] = await p.query(
-      'SELECT id, original_name, file_type, original_size, optimized_size, savings_bytes, savings_pct, created_at FROM optimizations ORDER BY id DESC LIMIT ?',
-      [Math.min(Math.max(limit, 1), 100)]
-    );
+    let sql =
+      'SELECT id, original_name, file_type, original_size, optimized_size, savings_bytes, savings_pct, created_at FROM optimizations';
+    const params = [];
+    if (userEmail) {
+      sql += ' WHERE user_email = ?';
+      params.push(userEmail);
+    }
+    sql += ' ORDER BY id DESC LIMIT ?';
+    params.push(Math.min(Math.max(limit, 1), 100));
+    const [rows] = await p.query(sql, params);
     return rows;
   } catch (err) {
     console.warn('[DB] No se pudo leer historial:', err.message);
@@ -91,4 +99,39 @@ async function getHistory(limit = 20) {
   }
 }
 
-module.exports = { init, getPool, isReady, saveOptimization, getHistory };
+// Crea la tabla si no existe y migra columnas nuevas (idempotente).
+async function ensureSchema() {
+  const p = getPool();
+  if (!p) return;
+  try {
+    await p.query(`CREATE TABLE IF NOT EXISTS optimizations (
+      id               INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      user_email       VARCHAR(255) NULL,
+      original_name    VARCHAR(255) NOT NULL,
+      file_type        VARCHAR(32)  NOT NULL DEFAULT 'xml',
+      original_size    INT UNSIGNED NOT NULL DEFAULT 0,
+      optimized_size   INT UNSIGNED NOT NULL DEFAULT 0,
+      savings_bytes    INT          NOT NULL DEFAULT 0,
+      savings_pct      DECIMAL(6,3) NOT NULL DEFAULT 0,
+      comments_removed INT UNSIGNED NOT NULL DEFAULT 0,
+      empties_removed  INT UNSIGNED NOT NULL DEFAULT 0,
+      dups_removed     INT UNSIGNED NOT NULL DEFAULT 0,
+      decimals_trimmed INT UNSIGNED NOT NULL DEFAULT 0,
+      elapsed_ms       INT UNSIGNED NOT NULL DEFAULT 0,
+      client_ip        VARCHAR(45)  NULL,
+      created_at       DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_created (created_at)
+    ) ENGINE=InnoDB`);
+  } catch (err) {
+    console.warn('[DB] ensureSchema (create):', err.message);
+  }
+  try {
+    await p.query('ALTER TABLE optimizations ADD COLUMN user_email VARCHAR(255) NULL');
+  } catch (err) {
+    if (!/Duplicate column/i.test(err.message)) {
+      console.warn('[DB] ensureSchema (migracion user_email):', err.message);
+    }
+  }
+}
+
+module.exports = { init, getPool, isReady, ensureSchema, saveOptimization, getHistory };

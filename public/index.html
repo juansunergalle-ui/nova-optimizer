@@ -31,9 +31,17 @@
     </div>
 
     <div class="side-section side-grow">
-      <div class="side-title">SESIÓN</div>
+      <div class="side-title">PERFIL</div>
       <div id="sideUser" class="side-user">
         <span>Sin sesión iniciada</span>
+      </div>
+      <div id="sideProfile" class="side-profile" hidden>
+        <div class="side-stats">
+          <div><strong id="profCount">0</strong><span>optimizaciones</span></div>
+          <div><strong id="profSaved">0 B</strong><span>ahorrados</span></div>
+        </div>
+        <div class="side-profile-title">TU REGISTRO</div>
+        <div id="sideHistoryList" class="side-history-list"></div>
       </div>
     </div>
 
@@ -73,11 +81,12 @@
         </svg>
         <span>Iniciar sesión</span>
       </button>
-      <div id="userInfo" class="user-info" hidden>
-        <img id="userAvatar" class="user-avatar" alt="Avatar">
-        <span id="userName" class="user-name"></span>
-        <button id="btnLogout" class="logout-btn" title="Cerrar sesión">Salir</button>
-      </div>
+      <button id="btnLogout" class="login-btn" title="Cerrar sesión" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Cerrar sesión</span>
+      </button>
       <div class="version-chip">v1.1</div>
     </div>
   </header>
@@ -140,7 +149,7 @@
       <!-- Historial -->
       <div class="history">
         <div class="history-head">
-          <h3>Historial de optimizaciones</h3>
+          <h3>Tu historial</h3>
           <span id="historyBadge" class="badge">Guardado</span>
         </div>
         <div id="historyList" class="history-list">
@@ -247,6 +256,12 @@
             <path d="M5 15V5a2 2 0 012-2h10" stroke-linecap="round"/>
           </svg>
           Copiar XML
+        </button>
+        <button id="btnNew" class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 15V3m0 0L8 7m4-4l4 4M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Optimizar otro archivo
         </button>
       </div>
 
