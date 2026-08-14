@@ -4,8 +4,8 @@
   "description": "Nova Optimizer - Optimizador de archivos XML/YTYP/YMT de FiveM (addon props y clothing)",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node --watch server.js",
+    "dev": "node --watch server.js"
   },
   "engines": {
     "node": ">=18"
