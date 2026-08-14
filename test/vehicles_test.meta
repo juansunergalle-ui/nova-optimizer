@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Vehicles meta -->
+<CVehicleModelInfo>
+    <gameName>NOVA CAR</gameName>
+    <vehicleClass>0</vehicleClass>
+    <flags>2105664</flags>
+    <type>VEHICLE_TYPE_CAR</type>
+    <handlingId>nova</handlingId>
+    <collisionCombs>
+        <Item>
+            <mass>1800.000000</mass>
+            <inertia x="0.250000" y="0.500000" z="0.750000" />
+        </Item>
+        <Item></Item>
+    </collisionCombs>
+</CVehicleModelInfo>

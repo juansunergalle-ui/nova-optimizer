@@ -1,0 +1,12 @@
+# Dependencias
+node_modules/
+
+# Configuracion sensible (NO subir)
+.env
+
+# Logs
+*.log
+
+# Sistema
+.DS_Store
+Thumbs.db

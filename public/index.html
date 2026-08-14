@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NOVA OPTIMIZER — Optimiza tus props y clothing de FiveM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Fondo animado -->
+  <div class="bg">
+    <div class="grid"></div>
+    <div class="glow glow-a"></div>
+    <div class="glow glow-b"></div>
+    <div class="scanlines"></div>
+  </div>
+
+  <!-- Header -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <h1>NOVA<span>OPTIMIZER</span></h1>
+        <p>FiveM Asset Compression Engine</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div id="dbStatus" class="status-chip offline">
+        <span class="dot"></span><span class="status-label">MySQL: conectando…</span>
+      </div>
+      <div class="version-chip">v1.0</div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ===== FASE 1: Subida ===== -->
+    <section id="phase-upload" class="phase active">
+      <div class="intro">
+        <h2>Comprime tus assets de FiveM</h2>
+        <p>Sube tu <code>.xml</code>, <code>.meta</code>, <code>.ytyp.xml</code> o <code>.ymt.xml</code> de addon props o clothing y descarga una versión optimizada lista para tu servidor.</p>
+      </div>
+
+      <div id="dropzone" class="dropzone">
+        <input type="file" id="fileInput" accept=".xml,.meta,.ytyp,.ymt,.txt" hidden>
+        <div class="dropzone-inner">
+          <div class="dz-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <p class="dz-title">Arrastra tu archivo aquí</p>
+          <p class="dz-sub">o haz clic para seleccionarlo</p>
+          <div class="dz-formats">
+            <span>.xml</span><span>.meta</span><span>.ytyp</span><span>.ymt</span>
+          </div>
+        </div>
+        <div id="filePreview" class="file-preview" hidden>
+          <div class="file-info">
+            <div class="file-icon">XML</div>
+            <div class="file-meta">
+              <span id="fileName" class="file-name"></span>
+              <span id="fileSize" class="file-size"></span>
+            </div>
+          </div>
+          <div class="file-actions">
+            <button id="btnOptimize" class="btn btn-primary">
+              <span>OPTIMIZAR</span>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14m-6-6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-stats">
+        <div class="stat">
+          <div class="stat-num" id="statNodes">—</div>
+          <div class="stat-label">Nodos XML</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="statSize">—</div>
+          <div class="stat-label">Peso</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num" id="statType">—</div>
+          <div class="stat-label">Tipo</div>
+        </div>
+      </div>
+
+      <!-- Historial MySQL -->
+      <div class="history">
+        <div class="history-head">
+          <h3>Historial de optimizaciones</h3>
+          <span id="historyBadge" class="badge">MySQL</span>
+        </div>
+        <div id="historyList" class="history-list">
+          <div class="history-empty">Conecta MySQL en <code>.env</code> para ver el historial guardado en tu hosting.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FASE 2: Resultado ===== -->
+    <section id="phase-result" class="phase">
+      <div class="result-head">
+        <button id="btnBack" class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5m6 6l-6-6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Volver
+        </button>
+        <h2>Optimización completada</h2>
+        <span id="resultType" class="badge badge-accent">—</span>
+      </div>
+
+      <!-- Comparativa -->
+      <div class="compare">
+        <div class="compare-col original">
+          <div class="compare-label">ORIGINAL</div>
+          <div class="bar-wrap"><div class="bar" id="barOriginal"></div></div>
+          <div class="compare-num" id="sizeOriginal">—</div>
+          <div class="compare-sub" id="nodesOriginal">—</div>
+        </div>
+        <div class="compare-divider">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14m-6-8l6 6 6-6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="compare-col optimized">
+          <div class="compare-label">OPTIMIZADO</div>
+          <div class="bar-wrap"><div class="bar" id="barOptimized"></div></div>
+          <div class="compare-num" id="sizeOptimized">—</div>
+          <div class="compare-sub" id="nodesOptimized">—</div>
+        </div>
+      </div>
+
+      <div class="savings">
+        <div class="savings-ring" id="savingsRing">
+          <div class="savings-inner">
+            <span id="savingsPct">0%</span>
+            <small>ahorrado</small>
+          </div>
+        </div>
+        <div class="savings-detail">
+          <div class="savings-row"><span>Ahorro total</span><strong id="savingsBytes">—</strong></div>
+          <div class="savings-row"><span>Comentarios eliminados</span><strong id="statComments">0</strong></div>
+          <div class="savings-row"><span>Nodos vacíos eliminados</span><strong id="statEmpties">0</strong></div>
+          <div class="savings-row"><span>Decimales recortados</span><strong id="statDecimals">0</strong></div>
+          <div class="savings-row"><span>Tiempo de proceso</span><strong id="statElapsed">—</strong></div>
+        </div>
+      </div>
+
+      <div class="result-actions">
+        <button id="btnDownload" class="btn btn-primary btn-lg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 4v12m0 0l-4-4m4 4l4-4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke-linecap="round"/>
+          </svg>
+          DESCARGAR OPTIMIZADO
+        </button>
+        <button id="btnCopy" class="btn btn-ghost">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="12" height="12" rx="2"/>
+            <path d="M5 15V5a2 2 0 012-2h10" stroke-linecap="round"/>
+          </svg>
+          Copiar XML
+        </button>
+      </div>
+
+      <!-- Vista previa del codigo -->
+      <div class="preview">
+        <div class="preview-tabs">
+          <button class="preview-tab active" data-target="tab-original">Original</button>
+          <button class="preview-tab" data-target="tab-optimized">Optimizado</button>
+        </div>
+        <div id="tab-original" class="code active"></div>
+        <div id="tab-optimized" class="code"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    <p>NOVA OPTIMIZER · Motor de compresión para assets de FiveM · Los archivos se procesan en tu servidor</p>
+  </footer>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="js/nova.js"></script>
+</body>
+</html>
