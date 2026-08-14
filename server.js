@@ -8,6 +8,10 @@ const multer = require('multer');
 
 const db = require('./server/db');
 const { optimize, classifyType } = require('./server/optimizer');
+const { optimizeYtd } = require('./server/ytdOptimizer');
+const { parseYtd, fmtName, toDds } = require('./server/ytd');
+const { analyzeRsc7 } = require('./server/rsc7');
+const { optimizeZip } = require('./server/zipOptimizer');
 
 const PORT = Number(process.env.PORT || 3000);
 const MAX_MB = Number(process.env.MAX_FILE_MB || 25);
@@ -120,6 +124,160 @@ app.post('/api/optimize', upload.single('file'), async (req, res) => {
       return res.status(413).json({ ok: false, error: 'El archivo supera el limite de ' + MAX_MB + ' MB.' });
     }
     res.status(500).json({ ok: false, error: 'Error interno al optimizar: ' + err.message });
+  }
+});
+
+// POST /api/optimize-ytd - optimizar un .ytd (texturas) con comparador
+app.post('/api/optimize-ytd', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ ok: false, error: 'No se recibio ningun archivo.' });
+    }
+
+    const quality = Math.max(1, Math.min(100, Number(req.body.quality || 100)));
+    const stripMips = req.body.stripMips !== 'false';
+
+    // Análisis solo (calidad 100 + mips false) para vista previa sin descarga
+    const analyzeOnly = req.body.analyze === 'true';
+
+    const result = analyzeOnly
+      ? { textures: parseYtd(req.file.buffer).textures, preview: true }
+      : optimizeYtd(req.file.buffer, { quality, stripMips, fileName: req.file.originalname });
+
+    const baseName = req.file.originalname.replace(/\.[^.]+$/, '');
+    const ext = path.extname(req.file.originalname).toLowerCase();
+
+    if (analyzeOnly) {
+      return res.json({
+        ok: true,
+        type: 'ytd',
+        originalName: req.file.originalname,
+        originalSize: req.file.buffer.length,
+        textures: result.textures.map((t) => ({
+          name: t.name,
+          formatName: t.formatName,
+          width: t.width,
+          height: t.height,
+          levels: t.levels,
+          pixelSize: t.pixelSize,
+        })),
+        elapsedMs: 0,
+      });
+    }
+
+    // Guardar en MySQL (no bloquea la respuesta si falla)
+    const record = {
+      original_name: req.file.originalname,
+      file_type: 'ytd',
+      original_size: result.original.size,
+      optimized_size: result.optimized.size,
+      savings_bytes: result.saved,
+      savings_pct: +result.pct,
+      comments_removed: 0,
+      empties_removed: 0,
+      dups_removed: 0,
+      decimals_trimmed: 0,
+      elapsed_ms: 0,
+      client_ip: req.ip,
+    };
+    db.saveOptimization(record).catch(() => {});
+
+    res.json({
+      ok: true,
+      type: 'ytd',
+      originalName: req.file.originalname,
+      optimizedName: baseName + '_optimized' + ext,
+      originalSize: result.original.size,
+      optimizedSize: result.optimized.size,
+      savingsBytes: result.saved,
+      savingsPct: +result.pct,
+      quality,
+      stripMips,
+      textures: result.textures,
+      previews: result.previews,
+      optimizedFile: result.file.toString('base64'),
+      elapsedMs: 0,
+    });
+  } catch (err) {
+    console.error('[API] Error optimizando YTD:', err);
+    res.status(500).json({ ok: false, error: 'Error interno al optimizar YTD: ' + err.message });
+  }
+});
+
+// POST /api/ytd-dds - extraer una textura de un .ytd como DDS (para vista previa)
+app.post('/api/ytd-dds', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ ok: false, error: 'No se recibio ningun archivo.' });
+    }
+    const texName = req.body.name;
+    const parsed = parseYtd(req.file.buffer);
+    const tex = parsed.textures.find((t) => t.name === texName);
+    if (!tex) return res.status(404).json({ ok: false, error: 'Textura no encontrada: ' + texName });
+    res.json({ ok: true, dds: toDds(tex).toString('base64'), formatName: fmtName(tex.format) });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Error: ' + err.message });
+  }
+});
+
+// POST /api/analyze - análisis técnico de .ydd/.yft/.ydr/.ybn/.ymap (RSC7)
+app.post('/api/analyze', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ ok: false, error: 'No se recibio ningun archivo.' });
+    }
+    const info = analyzeRsc7(req.file.buffer);
+    res.json({
+      ok: true,
+      type: 'rsc7',
+      originalName: req.file.originalname,
+      originalSize: req.file.buffer.length,
+      version: info.version,
+      isCompressed: info.isCompressed,
+      compressedRatio: info.compressedRatio,
+      sysSize: info.sysSize,
+      gfxSize: info.gfxSize,
+      hasTextureDict: info.hasTextureDict,
+      textures: info.textures.map((t) => ({
+        name: t.name,
+        formatName: t.formatName,
+        width: t.width,
+        height: t.height,
+        levels: t.levels,
+        pixelSize: t.pixelSize,
+      })),
+    });
+  } catch (err) {
+    res.status(500).json({ ok: false, error: 'Error al analizar: ' + err.message });
+  }
+});
+
+// POST /api/optimize-zip - optimizar las .ytd de un .zip completo
+app.post('/api/optimize-zip', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ ok: false, error: 'No se recibio ningun archivo.' });
+    }
+    const quality = Math.max(1, Math.min(100, Number(req.body.quality || 100)));
+    const result = optimizeZip(req.file.buffer, { quality, stripMips: true });
+
+    const baseName = req.file.originalname.replace(/\.[^.]+$/, '');
+    res.json({
+      ok: true,
+      type: 'zip',
+      originalName: req.file.originalname,
+      optimizedName: baseName + '_optimized.zip',
+      originalSize: result.original.size,
+      optimizedSize: result.optimized.size,
+      savingsBytes: result.saved,
+      savingsPct: +result.pct,
+      quality,
+      entries: result.entries,
+      optimizedFile: result.file.toString('base64'),
+    });
+  } catch (err) {
+    console.error('[API] Error optimizando ZIP:', err);
+    res.status(500).json({ ok: false, error: 'Error al optimizar ZIP: ' + err.message });
   }
 });
 

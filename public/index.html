@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NOVA OPTIMIZER — Optimiza tus props y clothing de FiveM</title>
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
@@ -21,11 +22,7 @@
   <!-- Header -->
   <header class="topbar">
     <div class="brand">
-      <div class="brand-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M13 2L3 14h7l-1 8 10-12h-7l1-8z" stroke-linejoin="round"/>
-        </svg>
-      </div>
+      <img src="assets/logo.svg" alt="Nova Optimizer" class="brand-logo">
       <div class="brand-text">
         <h1>NOVA<span>OPTIMIZER</span></h1>
         <p>FiveM Asset Compression Engine</p>
@@ -35,7 +32,7 @@
       <div id="dbStatus" class="status-chip offline">
         <span class="dot"></span><span class="status-label">MySQL: conectando…</span>
       </div>
-      <div class="version-chip">v1.0</div>
+      <div class="version-chip">v1.1</div>
     </div>
   </header>
 
@@ -45,27 +42,24 @@
     <section id="phase-upload" class="phase active">
       <div class="intro">
         <h2>Comprime tus assets de FiveM</h2>
-        <p>Sube tu <code>.xml</code>, <code>.meta</code>, <code>.ytyp.xml</code> o <code>.ymt.xml</code> de addon props o clothing y descarga una versión optimizada lista para tu servidor.</p>
+        <p>Sube <code>.ytd</code>, <code>.ydd</code>, <code>.yft</code>, <code>.ydr</code>, <code>.xml</code>, <code>.meta</code> o un <code>.zip</code> completo. Compara la calidad antes/después y descarga la versión optimizada lista para tu servidor.</p>
       </div>
 
       <div id="dropzone" class="dropzone">
-        <input type="file" id="fileInput" accept=".xml,.meta,.ytyp,.ymt,.txt" hidden>
+        <input type="file" id="fileInput" accept=".xml,.meta,.ytd,.ydd,.yft,.ydr,.ybn,.ymap,.ytyp,.ymt,.zip,.txt" hidden>
         <div class="dropzone-inner">
           <div class="dz-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M12 16V4m0 0l-4 4m4-4l4 4" stroke-linecap="round" stroke-linejoin="round"/>
-              <path d="M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" stroke-linecap="round"/>
-            </svg>
+            <img src="assets/logo.svg" alt="Nova" style="width:38px;height:38px">
           </div>
           <p class="dz-title">Arrastra tu archivo aquí</p>
           <p class="dz-sub">o haz clic para seleccionarlo</p>
           <div class="dz-formats">
-            <span>.xml</span><span>.meta</span><span>.ytyp</span><span>.ymt</span>
+            <span>.ytd</span><span>.ydd</span><span>.yft</span><span>.ydr</span><span>.xml</span><span>.meta</span><span>.zip</span>
           </div>
         </div>
         <div id="filePreview" class="file-preview" hidden>
           <div class="file-info">
-            <div class="file-icon">XML</div>
+            <div class="file-icon">N</div>
             <div class="file-meta">
               <span id="fileName" class="file-name"></span>
               <span id="fileSize" class="file-size"></span>
@@ -105,6 +99,40 @@
         </div>
         <div id="historyList" class="history-list">
           <div class="history-empty">Conecta MySQL en <code>.env</code> para ver el historial guardado en tu hosting.</div>
+        </div>
+      </div>
+
+      <!-- Formatos soportados -->
+      <div class="formats-grid">
+        <div class="fmt">
+          <div class="fmt-icon" style="--fmt:#22d3ee">YTD</div>
+          <div><strong>Texturas</strong><span>Optimización real · comparador de calidad</span></div>
+          <div class="fmt-tag full">FULL</div>
+        </div>
+        <div class="fmt">
+          <div class="fmt-icon" style="--fmt:#e879f9">YDD</div>
+          <div><strong>Ropa / drawables</strong><span>Análisis técnico · texturas del pack</span></div>
+          <div class="fmt-tag">INFO</div>
+        </div>
+        <div class="fmt">
+          <div class="fmt-icon" style="--fmt:#e879f9">YFT</div>
+          <div><strong>Fragmentos / vehículos</strong><span>Análisis técnico · texturas del pack</span></div>
+          <div class="fmt-tag">INFO</div>
+        </div>
+        <div class="fmt">
+          <div class="fmt-icon" style="--fmt:#e879f9">YDR</div>
+          <div><strong>Props estáticos</strong><span>Análisis técnico · texturas del pack</span></div>
+          <div class="fmt-tag">INFO</div>
+        </div>
+        <div class="fmt">
+          <div class="fmt-icon" style="--fmt:#a3e635">XML</div>
+          <div><strong>Meta / ytyp / ymt</strong><span>Optimización real de texto</span></div>
+          <div class="fmt-tag full">FULL</div>
+        </div>
+        <div class="fmt">
+          <div class="fmt-icon" style="--fmt:#fbbf24">ZIP</div>
+          <div><strong>Paquete completo</strong><span>Optimiza todas las texturas .ytd del pack</span></div>
+          <div class="fmt-tag full">FULL</div>
         </div>
       </div>
     </section>
@@ -174,6 +202,25 @@
           </svg>
           Copiar XML
         </button>
+      </div>
+
+      <!-- Comparador de calidad de texturas -->
+      <div class="quality" id="qualityPanel" hidden>
+        <div class="quality-head">
+          <h3>Comparador de calidad de texturas</h3>
+          <div class="quality-legend">
+            <span class="q-item"><i class="swatch sw-orig"></i>Original</span>
+            <span class="q-item"><i class="swatch sw-opt"></i>Optimizada</span>
+          </div>
+        </div>
+        <div class="quality-slider-row">
+          <span class="qs-label">Calidad global</span>
+          <input type="range" id="qSlider" min="10" max="100" value="100">
+          <span class="qs-val" id="qSliderVal">100%</span>
+        </div>
+        <div id="textureGrid" class="texture-grid">
+          <div class="tile-placeholder">Cargando texturas…</div>
+        </div>
       </div>
 
       <!-- Vista previa del codigo -->

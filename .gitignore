@@ -10,3 +10,8 @@ node_modules/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Archivos de prueba locales (NO subir)
+oycm3.ytd
+oycm3.yft
+*.png
